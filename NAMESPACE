@@ -1,0 +1,19 @@
+useDynLib(BeSS, .registration = TRUE)
+importFrom(Rcpp, evalCpp)
+importFrom("survival", "coxph")
+importFrom("survival", "Surv")
+importFrom("glmnet", "glmnet")
+importFrom("Matrix", "Matrix")
+importFrom("graphics","abline","axis","box","grid","layout","lines","mtext","par",
+           "plot","plot.new","plot.window","text","title")
+importFrom("stats","glm","rbinom","rnorm","runif")
+exportPattern("^[[:alpha:]]+")
+
+export(bess, bess.one, gen.data, coef.bess, coef.bess.one, plot.bess, predict.bess, predict.bess.one, summary.bess)
+
+S3method(plot,bess)
+S3method(coef,bess)
+S3method(summary,bess)
+S3method(predict,bess)
+S3method(predict,bess.one)
+S3method(coef,bess.one)
