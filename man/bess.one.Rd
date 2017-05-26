@@ -6,7 +6,7 @@
 }
 \usage{
 bess.one(x, y, family = c("gaussian", "binomial", "cox"), s = 1, max.steps = 15,
-         glm.max = 1e+6, cox.max = 20, normalize = FALSE)
+         glm.max = 1e+6, cox.max = 20, normalize = TRUE)
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -16,11 +16,11 @@ bess.one(x, y, family = c("gaussian", "binomial", "cox"), s = 1, max.steps = 15,
   \item{max.steps}{The maximum number of iterations in the primal dual active set algorithm. In most cases, only a few steps can gurantee the convergence. Default is 15.}
   \item{glm.max}{The maximum number of iterations for solving the maximum likelihood problem on the active set. It occurs at each step in the primal dual active set algorithm. Only used in the logistic regression for family = "\code{binomial}". Default is \eqn{1e+6}.}
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set. It occurs at each step in the primal dual active set algorithm. Only used in Cox model for family  = "\code{cox}". Default is 20.}
-  \item{normalize}{Whether to normalize \code{x} or not. Default is FALSE.}
+  \item{normalize}{Whether to normalize \code{x} or not. Default is TRUE.}
 }
 \value{
 A list with class attribute '\code{bess.one}' and named components:
-  \item{type}{Types of the model: "\code{bess_linear}" for linear model, "\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model}
+  \item{type}{Types of the model: "\code{bess_gaussian}" for linear model, "\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model}
   \item{beta}{The best fitting coefficients with the smallest loss function given the model size \code{s}.}
   \item{lambda}{The estimated lambda value in the Lagrangian form of the best subset selection problem with model size \code{s}.}
   \item{deviance}{The value of \eqn{-2*logL(\beta)}.}

@@ -73,13 +73,16 @@ bess.cox=function(x,y,beta0,s,
   }
   dev=-2*cox$loglik[2]
   nulldev=-2*cox$loglik[1]
+  aic=dev+2*s
+  bic=dev+log(n)*s
+  
   if(normalize==T)
   {
     beta=sqrt(n)*beta/normx
   }
 
   return(list(family="bess_cox",beta=beta,deviance=dev,
-              nulldeviance=nulldev,lambda=setA$max_T^2/2))
+              nulldeviance=nulldev,lambda=setA$max_T^2/2,AIC=aic,BIC=bic))
 }
 
 

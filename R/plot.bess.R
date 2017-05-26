@@ -12,7 +12,7 @@ plot.bess=function(x,type=c("loss","coefficients","both"),breaks=TRUE,K=NULL, ..
   s.list=s.list[s_order]
   dev=dev[s_order]
   beta=beta[,s_order]
-
+  beta=cbind(rep(0,nrow(object$beta)),beta)
 
   if(type=="loss")
   {
@@ -21,7 +21,7 @@ plot.bess=function(x,type=c("loss","coefficients","both"),breaks=TRUE,K=NULL, ..
   }
   if(type=="coefficients")
   {
-    plot_solution(beta,s.list,K,breaks, mar = c(3,4,3,4))
+    plot_solution(beta,c(0, s.list),K,breaks, mar = c(3,4,3,4))
     mtext("Solution path",3,cex=1.0,line=1,font=2)
   }
   if(type=="both")
@@ -30,7 +30,7 @@ plot.bess=function(x,type=c("loss","coefficients","both"),breaks=TRUE,K=NULL, ..
     oldpar <- par(las=1, mar=c(2,4,2,4), oma=c(2.5,0.5,1.5,0.5))
     plot_loss(dev,s.list,K,breaks,show_x = FALSE)
     mtext("Loss function and Solution Path",3, outer=FALSE, line=1, cex=1.0, font=2)
-    plot_solution(beta, s.list, K,breaks)
+    plot_solution(beta, c(0, s.list), K,breaks)
     par(oldpar)
     par(mfrow=c(1,1))
   }

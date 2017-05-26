@@ -6,12 +6,13 @@
   Similar to other prediction methods, this function provides estimated coefficients from a fitted "\code{bess}" object or a fitted "\code{bess.one}" object.
 }
 \usage{
-    \method{coef}{bess}(object, sparse = TRUE , ...)
+    \method{coef}{bess}(object, sparse=TRUE, type = c("ALL", "AIC", "BIC"),...)
     \method{coef}{bess.one}(object, sparse = TRUE , ...)
 }
 \arguments{
   \item{object}{A "\code{bess}" project or a "\code{bess.one}" project.}
   \item{sparse}{Logical or NULL, specifying whether the coefficients should be presented as sparse matrix or not.}
+  \item{type}{Types of coefficients returned. \code{ type = "AIC"} cooresponds to the coefficient with optimal AIC value; \code{ type = "BIC"} cooresponds to the coefficient with optimal BIC value; \code{ type = "ALL"} cooresponds to all coefficients in the \code{bess} object. Default is \code{ALL}. }
   \item{\dots}{Other arguments.}
 }
 

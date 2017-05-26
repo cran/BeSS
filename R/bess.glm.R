@@ -80,10 +80,10 @@ bess.glm=function(x,y,beta0,
       }
       #dev=logit$deviance
       dev=-2*sum((y*log(p) + (1-y)*log(1-p))[which(p>1e-20&p<1-1e-20)])
-
       nulldev=-2*sum(y*log(0.5) + (1-y)*log(0.5))
-
-
+      aic=dev+2*s
+      bic=dev+log(n)*s
+      
       if(normalize)
       {
         beta=sqrt(n)*beta/normx
@@ -92,7 +92,7 @@ bess.glm=function(x,y,beta0,
 
       return(list(family="bess_binomial",beta=beta,coef0=coef0,
                   deviance=dev,nulldeviance=nulldev,
-                  lambda=setA$max_T^2/2,p=p))
+                  lambda=setA$max_T^2/2,p=p,AIC=aic,BIC=bic))
 }
 
 

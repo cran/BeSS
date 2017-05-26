@@ -1,12 +1,15 @@
-predict.bess=function(object, newdata, ...)
+predict.bess=function(object, newdata, type = c("ALL", "AIC","BIC"),...)
 {
+  type <- match.arg(type)
   if(object$family == "bess_gaussian")
   {
     newx = newdata
     betas = object$beta
     coef0 = object$coef0
-    y = newx%*%betas+coef0
-    return(t(y))
+    y = t(newx%*%betas)+coef0
+    if(type == "ALL"){
+      return(y)
+    }else return(y[which.min(object[[type]]),,drop = TRUE])
   }
   if(object$family == "bess_binomial")
   {
@@ -24,7 +27,9 @@ predict.bess=function(object, newdata, ...)
        class[which(class == 1,arr.ind = T)] = object$y_names[2]
       }
     }
-    return(class)
+    if(type == "ALL"){
+      return(class)
+    }else return(class[which.min(object[[type]]),,drop = TRUE])
   }
   if(object$family=="bess_cox")
   {
@@ -32,7 +37,9 @@ predict.bess=function(object, newdata, ...)
     betas = object$beta
 
     betax = newx%*%betas
-    return(t(betax))
+    if(type == "ALL"){
+      return(t(betax))
+    }else return(betax[,which.min(object[[type]]),drop = TRUE])
   }
 
 }

@@ -1,9 +1,9 @@
- bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
+bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
                   s = 1,
                   max.steps = 15,
                   glm.max = 1e6,
                   cox.max = 20,
-                  normalize = FALSE)
+                  normalize = TRUE)
 {
   family <- match.arg(family)
   if(ncol(x)==1|is.vector(x)) stop("x should be two columns at least!")
@@ -35,10 +35,12 @@
   {stop("s is too large")}
 
   x=as.matrix(x)
+  vn=colnames(x)
 
   if(family=="gaussian")
   {
     out=bess.lm(x=x,y=y,beta0=beta0,s=s,max.steps=max.steps,normalize=normalize)
+    names(out[[2]])=vn
     class(out)="bess.one"
     return(out)
   }
@@ -51,8 +53,8 @@
           normalize=normalize)
     if(!setequal(y_names,c(0,1)))
     {
-     fit[[8]] = y_names
-     names(fit[[8]])=y_names
+     fit[[10]] = y_names
+     names(fit[[10]])=y_names
      class(fit)="bess.one"
      return(fit)
     }else
@@ -63,11 +65,11 @@
   }
   if(family=="cox")
     {
-     out=return(bess.cox(x=x,y=y,beta0=beta0,
-                         s=s,
-                         cox.max=cox.max,
-                         max.steps=max.steps,
-                         normalize=normalize))
+     out=bess.cox(x=x,y=y,beta0=beta0,
+                  s=s,
+                  cox.max=cox.max,
+                  max.steps=max.steps,
+                  normalize=normalize)
 
      class(out)="bess.one"
      return(out)

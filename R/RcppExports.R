@@ -9,19 +9,7 @@ get_A <- function(X, y, beta, coef0, T, B) {
     .Call('BeSS_get_A', PACKAGE = 'BeSS', X, y, beta, coef0, T, B)
 }
 
-get_A2 <- function(X, y, beta, coef0, max_T, B) {
-    .Call('BeSS_get_A2', PACKAGE = 'BeSS', X, y, beta, coef0, max_T, B)
-}
-
 getcox_A <- function(X, y, beta, T, B, status) {
     .Call('BeSS_getcox_A', PACKAGE = 'BeSS', X, y, beta, T, B, status)
-}
-
-getcox_A2 <- function(X, y, beta, max_T, B, status) {
-    .Call('BeSS_getcox_A2', PACKAGE = 'BeSS', X, y, beta, max_T, B, status)
-}
-
-abess_lm <- function(X, y, T0L, T0R, K_max, max_steps, beta0, eps) {
-    .Call('BeSS_abess_lm', PACKAGE = 'BeSS', X, y, T0L, T0R, K_max, max_steps, beta0, eps)
 }
 

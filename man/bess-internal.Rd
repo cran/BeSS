@@ -2,12 +2,9 @@
 \title{Internal BeSS functions}
 \alias{plot_solution}
 \alias{plot_loss}
-\alias{abess_lm}
 \alias{bess_lm}
 \alias{get_A}
-\alias{get_A2}
 \alias{getcox_A}
-\alias{getcox_A2}
 \alias{bess.lm}
 \alias{bess.glm}
 \alias{bess.cox}

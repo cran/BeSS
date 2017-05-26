@@ -37,22 +37,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// get_A2
-List get_A2(Eigen::MatrixXd X, Eigen::VectorXd y, Eigen::VectorXd beta, double coef0, double max_T, Eigen::VectorXd B);
-RcppExport SEXP BeSS_get_A2(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP coef0SEXP, SEXP max_TSEXP, SEXP BSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< double >::type coef0(coef0SEXP);
-    Rcpp::traits::input_parameter< double >::type max_T(max_TSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_A2(X, y, beta, coef0, max_T, B));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getcox_A
 List getcox_A(Eigen::MatrixXd X, Eigen::MatrixXd y, Eigen::VectorXd beta, int T, Eigen::VectorXd B, Eigen::VectorXd status);
 RcppExport SEXP BeSS_getcox_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP TSEXP, SEXP BSEXP, SEXP statusSEXP) {
@@ -66,40 +50,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type B(BSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type status(statusSEXP);
     rcpp_result_gen = Rcpp::wrap(getcox_A(X, y, beta, T, B, status));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getcox_A2
-List getcox_A2(Eigen::MatrixXd X, Eigen::VectorXd y, Eigen::VectorXd beta, double max_T, Eigen::VectorXd B, Eigen::VectorXd status);
-RcppExport SEXP BeSS_getcox_A2(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP max_TSEXP, SEXP BSEXP, SEXP statusSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< double >::type max_T(max_TSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type B(BSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type status(statusSEXP);
-    rcpp_result_gen = Rcpp::wrap(getcox_A2(X, y, beta, max_T, B, status));
-    return rcpp_result_gen;
-END_RCPP
-}
-// abess_lm
-List abess_lm(Eigen::MatrixXd X, Eigen::VectorXd y, int T0L, int T0R, int K_max, int max_steps, Eigen::VectorXd beta0, double eps);
-RcppExport SEXP BeSS_abess_lm(SEXP XSEXP, SEXP ySEXP, SEXP T0LSEXP, SEXP T0RSEXP, SEXP K_maxSEXP, SEXP max_stepsSEXP, SEXP beta0SEXP, SEXP epsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type T0L(T0LSEXP);
-    Rcpp::traits::input_parameter< int >::type T0R(T0RSEXP);
-    Rcpp::traits::input_parameter< int >::type K_max(K_maxSEXP);
-    Rcpp::traits::input_parameter< int >::type max_steps(max_stepsSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type beta0(beta0SEXP);
-    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
-    rcpp_result_gen = Rcpp::wrap(abess_lm(X, y, T0L, T0R, K_max, max_steps, beta0, eps));
     return rcpp_result_gen;
 END_RCPP
 }

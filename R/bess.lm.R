@@ -32,13 +32,15 @@ bess.lm=function(x,y,beta0,s,max.steps=20,normalize=FALSE)
   fit=bess_lm(x,y,s,max.steps,beta0)
   beta=fit$beta
   lambda=fit$max_T^2/2
-  mse=mean((y-x%*%beta)^2)/2
+  mse=mean((y-x%*%beta)^2)
+  aic=n*log(mse)+2*s
+  bic=n*log(mse)+log(n)*s
   if(normalize)
   {
     beta=sqrt(n)*beta/normx
     coef0=mu-sum(beta*meanx)
-    return(list(family="bess_gaussian",beta=beta,coef0=coef0,lambda=lambda,mse=mse))
-  }else return(list(family="bess_gaussian",beta=beta,lambda=lambda,mse=mse))
+    return(list(family="bess_gaussian",beta=beta,coef0=coef0,lambda=lambda,mse=mse,AIC=aic,BIC=bic))
+  }else return(list(family="bess_gaussian",beta=beta,coef0=0,lambda=lambda,mse=mse,AIC=aic,BIC=bic))
 }
 
 

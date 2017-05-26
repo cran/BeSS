@@ -6,8 +6,8 @@
 }
 \usage{
   bess(x, y, family = c("gaussian", "binomial", "cox"), method = "gsection",
-  s.min = , s.max, s.list, K.max = 20, max.steps = 15, glm.max = 1e6, cox.max = 20,
-  epsilon = 1e-4, normalize = FALSE)
+  s.min = 1, s.max, s.list, K.max = 20, max.steps = 15, glm.max = 1e6, cox.max = 20,
+  epsilon = 1e-4, normalize = TRUE)
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -25,7 +25,7 @@
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set at each step in the primal dual active set algorithm. Only used in Cox's model for family="cox". Default is 20.}
 
   \item{epsilon}{The tolerance for an early stoping rule in the method "sequential". The early stopping rule is defined as \eqn{\|Y-X\beta\|/n \leq \epsilon}.}
-  \item{normalize}{whether to normalize x or not. Default is FALSE.}
+  \item{normalize}{whether to normalize x or not. Default is TRUE.}
 
 }
 \details{
@@ -43,6 +43,8 @@ A list with class attribute 'bess' and named components:
   \item{lambda}{The lambda value in the Lagrangian form of the best subset selection problem with model size of \eqn{s}.}
   \item{deviance}{The value of \eqn{-2\times logL}.}
   \item{nulldeviance}{The value of \eqn{-2\times logL} for null model.}
+  \item{AIC}{The value of \eqn{-2\times logL + 2 \|\beta\|_0}.}
+  \item{BIC}{The value of \eqn{-2\times logL+ log(n) \|\beta\|_0}.}
 
 }
 
