@@ -35,12 +35,15 @@ bess.lm=function(x,y,beta0,s,max.steps=20,normalize=FALSE)
   mse=mean((y-x%*%beta)^2)
   aic=n*log(mse)+2*s
   bic=n*log(mse)+log(n)*s
+  ebic=n*log(mse)+(log(n)+2*log(m))*s
   if(normalize)
   {
     beta=sqrt(n)*beta/normx
     coef0=mu-sum(beta*meanx)
-    return(list(family="bess_gaussian",beta=beta,coef0=coef0,lambda=lambda,mse=mse,AIC=aic,BIC=bic))
-  }else return(list(family="bess_gaussian",beta=beta,coef0=0,lambda=lambda,mse=mse,AIC=aic,BIC=bic))
+    return(list(family="bess_gaussian",beta=beta,coef0=coef0,
+                lambda=lambda,mse=mse,AIC=aic,BIC=bic,EBIC=ebic))
+  }else return(list(family="bess_gaussian",beta=beta,coef0=0,
+                    lambda=lambda,mse=mse,AIC=aic,BIC=bic,EBIC=ebic))
 }
 
 

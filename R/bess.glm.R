@@ -83,7 +83,8 @@ bess.glm=function(x,y,beta0,
       nulldev=-2*sum(y*log(0.5) + (1-y)*log(0.5))
       aic=dev+2*s
       bic=dev+log(n)*s
-      
+      ebic=dev+(log(n)+2*log(m))*s
+
       if(normalize)
       {
         beta=sqrt(n)*beta/normx
@@ -92,7 +93,7 @@ bess.glm=function(x,y,beta0,
 
       return(list(family="bess_binomial",beta=beta,coef0=coef0,
                   deviance=dev,nulldeviance=nulldev,
-                  lambda=setA$max_T^2/2,p=p,AIC=aic,BIC=bic))
+                  lambda=setA$max_T^2/2,p=p,AIC=aic,BIC=bic,EBIC=ebic))
 }
 
 

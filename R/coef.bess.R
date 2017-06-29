@@ -1,4 +1,4 @@
-coef.bess=function(object, sparse=TRUE, type = c("ALL", "AIC", "BIC"),...)
+coef.bess=function(object, sparse=TRUE, type = c("ALL", "AIC", "BIC", "EBIC"),...)
 {
   type <- match.arg(type)
   if(!is.null(object$coef0)) beta=rbind(intercept=object$coef0, object$beta) else beta=object$beta

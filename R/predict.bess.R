@@ -1,4 +1,4 @@
-predict.bess=function(object, newdata, type = c("ALL", "AIC","BIC"),...)
+predict.bess=function(object, newdata, type = c("ALL", "AIC", "BIC", "EBIC"),...)
 {
   type <- match.arg(type)
   if(object$family == "bess_gaussian")

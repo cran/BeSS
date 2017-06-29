@@ -45,7 +45,7 @@ A list with class attribute 'bess' and named components:
   \item{nulldeviance}{The value of \eqn{-2\times logL} for null model.}
   \item{AIC}{The value of \eqn{-2\times logL + 2 \|\beta\|_0}.}
   \item{BIC}{The value of \eqn{-2\times logL+ log(n) \|\beta\|_0}.}
-
+  \item{EBIC}{The value of \eqn{-2\times logL+ (log(n)+2\times log(p)) \|\beta\|_0}.}
 }
 
 

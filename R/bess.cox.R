@@ -75,14 +75,15 @@ bess.cox=function(x,y,beta0,s,
   nulldev=-2*cox$loglik[1]
   aic=dev+2*s
   bic=dev+log(n)*s
-  
+  ebic=dev+(log(n)+2*log(m))*s
+
   if(normalize==T)
   {
     beta=sqrt(n)*beta/normx
   }
 
   return(list(family="bess_cox",beta=beta,deviance=dev,
-              nulldeviance=nulldev,lambda=setA$max_T^2/2,AIC=aic,BIC=bic))
+              nulldeviance=nulldev,lambda=setA$max_T^2/2,AIC=aic,BIC=bic,EBIC=ebic))
 }
 
 

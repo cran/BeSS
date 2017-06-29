@@ -78,28 +78,29 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       sR=s.max
       beta0R=beta0
       beta0L=beta0
-      
+
       fit_L1=bess.lm(x,y,
                       beta0=beta0L,
                       s=sL,
                       max.steps=max.steps)
-      
+
       nullmse=fit_L1$mse
       fit_L=fit_L1
       fit_R=bess.lm(x,y,
                      beta0=beta0R,
                      s=sR,
                      max.steps=max.steps)
-      
+
       beta.fit=cbind(fit_L$beta,fit_R$beta)
       mse=c(fit_L$mse,fit_R$mse)
       lambda=c(fit_L$lambda,fit_R$lambda)
       aic=c(fit_L$AIC,fit_R$AIC)
       bic=c(fit_L$BIC,fit_R$BIC)
-      
+      ebic=c(fit_L$EBIC,fit_R$EBIC)
+
       beta0M=fit_R$beta
       s.list=c(sL,sR)
-      
+
       while(k<=K.max)
       {
         sM <- round(sL + (sR-sL)*0.618)
@@ -109,14 +110,15 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
                        s=sM,
                        max.steps=max.steps)
         cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\n",sep="")
-        
+
         beta0M=fit_M$beta
         beta.fit=cbind(beta.fit,beta0M)
-        
+
         mse=c(mse, fit_M$mse)
         lambda=c(lambda, fit_M$lambda)
         aic=c(aic, fit_M$AIC)
         bic=c(bic, fit_M$BIC)
+        ebic=c(ebic, fit_M$EBIC)
         if(abs(fit_L$mse-fit_M$mse)/abs(nullmse*(sM-sL)) > epsilon &
            abs(fit_R$mse-fit_M$mse)/abs(nullmse*(sM-sR)) < epsilon)
         {
@@ -134,13 +136,13 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
           sL=s.min
           fit_L=fit_L1
         }
-        
+
         if(sR-sL==1) break
         fit_ML=bess.lm(x,y,
                         beta0=beta0M,
                         s=sM,
                         max.steps=max.steps)
-        
+
         fit_MR=bess.lm(x,y,
                         beta0=beta0M,
                         s=sM,
@@ -148,7 +150,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         if(abs(fit_ML$mse-fit_M$mse)/abs(fit_M$mse) > epsilon &
            abs(fit_MR$mse-fit_M$mse)/abs(fit_M$mse) < epsilon)
         {break}
-        
+
         k=k+1
       }
     }
@@ -164,6 +166,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       lambda=vector()
       aic=vector()
       bic=vector()
+      ebic=vector()
       for(k in 1:length(s.list))
       {
         cat("select",s.list[k],"variables","\n")
@@ -176,7 +179,8 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         lambda[k]=fit$lambda
         aic[k]=fit$AIC
         bic[k]=fit$BIC
-        
+        ebic[k]=fit$EBIC
+
         #cat(abs((mse[k]-mse_L)/((nullmse-mse_L)*(L-s.list[k]))),"\n")
         if(s.list[k]==s.list[length(s.list)]) break
         if(abs((mse[k]-mse_L)/((nullmse-mse_L)*(s.list[length(s.list)]-s.list[k])))<epsilon) break
@@ -191,10 +195,10 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     rownames(beta.fit) = vn
     coef0=mu-drop(t(beta.fit)%*%meanx)
     names(coef0)=s.list
-    
+
     out=list(family="bess_gaussian",beta=beta.fit,coef0=coef0,
              s.list=s.list,meanx=meanx,normx=normx,meany=mu,
-             mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,lambda=lambda)
+             mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,lambda=lambda)
     class(out)="bess"
     return(out)
   }
@@ -252,6 +256,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     s.list=c(sL,sR)
     aic=c(fit_L$AIC,fit_R$AIC)
     bic=c(fit_L$BIC,fit_R$BIC)
+    ebic=c(fit_L$EBIC,fit_R$EBIC)
     while(k<=K.max)
     {
       sM <- round(sL + (sR-sL)*0.618)
@@ -274,7 +279,8 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       lambda=c(lambda,fit_M$lambda)
       aic=c(aic, fit_M$AIC)
       bic=c(bic, fit_M$BIC)
-      
+      ebic=c(ebic, fit_M$EBIC)
+
       if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
          abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
       {
@@ -332,6 +338,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       lambda=vector()
       aic=vector()
       bic=vector()
+      ebic=vector()
       for(k in 1:length(s.list))
       {
         cat("select",s.list[k],"variables","\n")
@@ -344,6 +351,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         lambda[k]=fit$lambda
         aic[k]=fit$AIC
         bic[k]=fit$BIC
+        ebic[k]=fit$EBIC
         beta.fit=cbind(beta.fit,fit$beta)
         coef0.fit=c(coef0.fit,fit$coef0)
         #cat(abs((dev[k]-dev_L)/((s.list[length(s.list)]-s.list[k])*(nulldev))),"\n")
@@ -357,7 +365,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     }
 
     beta.fit=sqrt(n)*(beta.fit)/normx
-    colnames(beta.fit) = s.list 
+    colnames(beta.fit) = s.list
     rownames(beta.fit) = vn
     coef0.fit = coef0.fit-drop(t(beta.fit)%*%meanx)
     names(coef0.fit) = s.list
@@ -365,13 +373,15 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     if(!setequal(y_names,c(0,1)))
     {
       out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
-         meanx=meanx,normx=normx,deviance=dev,nulldev=nulldev,AIC=aic,BIC=bic,lambda=lambda,y_names=y_names)
+               meanx=meanx,normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+               lambda=lambda,y_names=y_names)
       class(out)="bess"
       return(out)
     }else
     {
       out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
-               meanx=meanx,normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,lambda=lambda)
+               meanx=meanx,normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+               lambda=lambda)
       class(out)="bess"
       return(out)
     }
@@ -427,6 +437,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     s.list=c(sL,sR)
     aic=c(fit_L$AIC,fit_R$AIC)
     bic=c(fit_L$BIC,fit_R$BIC)
+    ebic=c(fit_L$EBIC,fit_R$EBIC)
     while(k<=K.max)
     {
       sM <- round(sL + (sR-sL)*0.618)
@@ -445,6 +456,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       lambda=c(lambda,fit_M$lambda)
       aic=c(aic, fit_M$AIC)
       bic=c(bic, fit_M$BIC)
+      ebic=c(ebic, fit_M$EBIC)
       if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
          abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
       {
@@ -496,6 +508,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       lambda=vector()
       aic=vector()
       bic=vector()
+      ebic=vector()
       for(k in 1:length(s.list))
       {
         cat("select",s.list[k],"variables","\n")
@@ -510,6 +523,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         beta.fit=cbind(beta.fit,fit$beta)
         aic[k]=fit$AIC
         bic[k]=fit$BIC
+        ebic[k]=fit$EBIC
 
         #cat(abs((dev[k]-dev_L)/((nulldev-dev_L)*(s.list[length(s.list)]-s.list[k]))),"\n")
         if(s.list[k]==s.list[length(s.list)]) break
@@ -523,9 +537,10 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     beta.fit=sqrt(n)*(beta.fit)/normx
     colnames(beta.fit) = s.list
     rownames(beta.fit) = vn
-    
+
     out=list(family="bess_cox",beta=beta.fit,s.list=s.list,meanx=meanx,
-             normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,lambda=lambda)
+             normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+             lambda=lambda)
     class(out)="bess"
     return(out)
   }
