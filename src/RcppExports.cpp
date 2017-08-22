@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // bess_lm
 List bess_lm(Eigen::MatrixXd X, Eigen::VectorXd y, int T, int max_steps, Eigen::VectorXd beta0);
-RcppExport SEXP BeSS_bess_lm(SEXP XSEXP, SEXP ySEXP, SEXP TSEXP, SEXP max_stepsSEXP, SEXP beta0SEXP) {
+RcppExport SEXP _BeSS_bess_lm(SEXP XSEXP, SEXP ySEXP, SEXP TSEXP, SEXP max_stepsSEXP, SEXP beta0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -23,7 +23,7 @@ END_RCPP
 }
 // get_A
 List get_A(Eigen::MatrixXd X, Eigen::VectorXd y, Eigen::VectorXd beta, double coef0, int T, Eigen::VectorXd B);
-RcppExport SEXP BeSS_get_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP coef0SEXP, SEXP TSEXP, SEXP BSEXP) {
+RcppExport SEXP _BeSS_get_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP coef0SEXP, SEXP TSEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // getcox_A
 List getcox_A(Eigen::MatrixXd X, Eigen::MatrixXd y, Eigen::VectorXd beta, int T, Eigen::VectorXd B, Eigen::VectorXd status);
-RcppExport SEXP BeSS_getcox_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP TSEXP, SEXP BSEXP, SEXP statusSEXP) {
+RcppExport SEXP _BeSS_getcox_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP TSEXP, SEXP BSEXP, SEXP statusSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,4 +52,16 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(getcox_A(X, y, beta, T, B, status));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_BeSS_bess_lm", (DL_FUNC) &_BeSS_bess_lm, 5},
+    {"_BeSS_get_A", (DL_FUNC) &_BeSS_get_A, 6},
+    {"_BeSS_getcox_A", (DL_FUNC) &_BeSS_getcox_A, 6},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_BeSS(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

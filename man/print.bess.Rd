@@ -1,15 +1,15 @@
-\name{summary.bess}
-\alias{summary.bess}
-\title{summary method for a "bess" object}
+\name{print.bess}
+\alias{print.bess}
+\title{print method for a "bess" object}
 \description{
   Print a summary of the "\code{bess}" path at each step along the path.
 }
 \usage{
-  \method{summary}{bess}(object, ...)
+  \method{print}{bess}(x, ...)
 }
 \arguments{
-  \item{object}{a "\code{bess}" project}
-  \item{\dots}{additional summary arguments}
+  \item{x}{a "\code{bess}" object}
+  \item{\dots}{additional print arguments}
 }
 
 \author{
@@ -26,6 +26,6 @@
 \examples{
 data <- gen.data(500, 20, family = "gaussian", 10, 0.2, 1)
 fit <- bess(data$x, data$y, family = "gaussian")
-summary.bess(fit)
+print(fit)
 
 }

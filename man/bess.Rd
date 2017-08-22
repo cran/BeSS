@@ -7,7 +7,7 @@
 \usage{
   bess(x, y, family = c("gaussian", "binomial", "cox"), method = "gsection",
   s.min = 1, s.max, s.list, K.max = 20, max.steps = 15, glm.max = 1e6, cox.max = 20,
-  epsilon = 1e-4, normalize = TRUE)
+  epsilon = 1e-4)
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -25,7 +25,6 @@
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set at each step in the primal dual active set algorithm. Only used in Cox's model for family="cox". Default is 20.}
 
   \item{epsilon}{The tolerance for an early stoping rule in the method "sequential". The early stopping rule is defined as \eqn{\|Y-X\beta\|/n \leq \epsilon}.}
-  \item{normalize}{whether to normalize x or not. Default is TRUE.}
 
 }
 \details{
@@ -41,6 +40,7 @@ A list with class attribute 'bess' and named components:
   \item{family}{Types of the model: "\code{bess_gaussian}" for linear model,"\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model.}
   \item{beta}{The best fitting coefficients of size \eqn{s=0,1,\dots,p} with the smallest loss function.}
   \item{lambda}{The lambda value in the Lagrangian form of the best subset selection problem with model size of \eqn{s}.}
+  \item{bestmodel}{The best fitted model, the class of which is "lm", "glm" or "coxph"}
   \item{deviance}{The value of \eqn{-2\times logL}.}
   \item{nulldeviance}{The value of \eqn{-2\times logL} for null model.}
   \item{AIC}{The value of \eqn{-2\times logL + 2 \|\beta\|_0}.}
@@ -73,12 +73,14 @@ rho <- 0.2
 data <- gen.data(n, p, family = "gaussian", K, rho, sigma)
 
 # Best subset selection
-fit <- bess(data$x, data$y, family = "gaussian")
-summary(fit)
-coef(fit, sparse=TRUE)  # The estimated coefficients
+fit1 <- bess(data$x, data$y, family = "gaussian")
+print(fit1)
+coef(fit1, sparse=TRUE)  # The estimated coefficients
+bestmodel <- fit1$bestmodel
+summary(bestmodel)
 
 # Plot solution path and the loss function
-plot(fit, type = "both", breaks = TRUE)
+plot(fit1, type = "both", breaks = TRUE)
 
 
 #--------------logistic model--------------#
@@ -89,8 +91,10 @@ data <- gen.data(n, p, family="binomial", 5, rho, sigma)
 # Best subset selection
 fit2 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
              family = "binomial", epsilon = 0)
-summary(fit2)
+print(fit2)
 coef(fit2, sparse = TRUE)
+bestmodel <- fit2$bestmodel
+summary(bestmodel)
 
 # Plot solution path and the loss function
 plot(fit2, type = "both", breaks = TRUE, K = 5)
@@ -103,8 +107,10 @@ data <- gen.data(n, p, K, rho, sigma, c = 10, family = "cox", scal = 10)
 # Best subset selection
 fit3 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
              family = "cox")
+print(fit3)
 coef(fit3, sparse = TRUE)
-summary(fit3)
+bestmodel <- fit3$bestmodel
+summary(bestmodel)
 
 # Plot solution path and the loss function
 plot(fit3, type = "both", breaks = TRUE, K = 10)

@@ -23,6 +23,7 @@ A list with class attribute '\code{bess.one}' and named components:
   \item{type}{Types of the model: "\code{bess_gaussian}" for linear model, "\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model}
   \item{beta}{The best fitting coefficients with the smallest loss function given the model size \code{s}.}
   \item{lambda}{The estimated lambda value in the Lagrangian form of the best subset selection problem with model size \code{s}.}
+  \item{bestmodel}{The best fitted model, the class of which is "lm", "glm" or "coxph"}
   \item{deviance}{The value of \eqn{-2*logL(\beta)}.}
   \item{nulldeviance}{The value of \eqn{-2*logL(\beta)} for null model.}
 }
@@ -65,6 +66,8 @@ data <- gen.data(n, p, family = "gaussian", K, rho, sigma)
 # Best subset selection
 fit1 <- bess.one(data$x, data$y, s = 10, family = "gaussian", normalize = TRUE)
 coef(fit1,sparse=TRUE)
+bestmodel <- fit1$bestmodel
+summary(bestmodel)
 
 #--------------logistic model--------------#
 
@@ -73,6 +76,8 @@ data <- gen.data(n, p, family = "binomial", K, rho, sigma)
 
 # Best subset selection
 fit2 <- bess.one(data$x, data$y, family = "binomial", s = 10, normalize = TRUE)
+bestmodel <- fit2$model
+summary(bestmodel)
 
 #--------------cox model--------------#
 
@@ -81,6 +86,8 @@ data <- gen.data(n, p, K, rho, sigma, c=10, family="cox", scal=10)
 
 # Best subset selection
 fit3 <- bess.one(data$x, data$y, s = 10, family = "cox", normalize = TRUE)
+bestmodel <- fit3$model
+summary(bestmodel)
 
 #----------------------High dimensional linear models--------------------#
 

@@ -6,8 +6,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
                 max.steps = 15,
                 glm.max = 1e6,
                 cox.max = 20,
-                epsilon = 1e-4,
-                normalize = TRUE)
+                epsilon = 1e-4)
 {
   family <- match.arg(family)
   if(ncol(x)==1|is.vector(x)) stop("x should be two columns at least!")
@@ -40,6 +39,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
 
 #normalize x
   x=as.matrix(x)
+  xs=x
   nm = dim(x)
   n = nm[1]
   m = nm[2]
@@ -55,6 +55,7 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
   if(family=="gaussian")
   {
     mu = mean(y)
+    ys = y
     y = drop(y - mu)
 
     normx = sqrt(drop(one %*% (x^2)))
@@ -79,12 +80,13 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       beta0R=beta0
       beta0L=beta0
 
+
       fit_L1=bess.lm(x,y,
                       beta0=beta0L,
                       s=sL,
                       max.steps=max.steps)
 
-      nullmse=fit_L1$mse
+      nullmse=fit_L1$nullmse
       fit_L=fit_L1
       fit_R=bess.lm(x,y,
                      beta0=beta0R,
@@ -196,8 +198,11 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     coef0=mu-drop(t(beta.fit)%*%meanx)
     names(coef0)=s.list
 
+    xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
+    bestmodel=lm(ys~xbest)
+
     out=list(family="bess_gaussian",beta=beta.fit,coef0=coef0,
-             s.list=s.list,meanx=meanx,normx=normx,meany=mu,
+             s.list=s.list,meanx=meanx,normx=normx,meany=mu,nsample=n,bestmodel=bestmodel,
              mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,lambda=lambda)
     class(out)="bess"
     return(out)
@@ -370,17 +375,22 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     coef0.fit = coef0.fit-drop(t(beta.fit)%*%meanx)
     names(coef0.fit) = s.list
 
+    xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
+    bestmodel=glm(y~xbest, family=binomial)
+
     if(!setequal(y_names,c(0,1)))
     {
       out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
-               meanx=meanx,normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+               meanx=meanx,normx=normx,nsample=n,bestmodel=bestmodel,
+               deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
                lambda=lambda,y_names=y_names)
       class(out)="bess"
       return(out)
     }else
     {
       out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
-               meanx=meanx,normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+               meanx=meanx,normx=normx,nsample=n,bestmodel=bestmodel,
+               deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
                lambda=lambda)
       class(out)="bess"
       return(out)
@@ -538,8 +548,12 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     colnames(beta.fit) = s.list
     rownames(beta.fit) = vn
 
+    xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
+    bestmodel=coxph(Surv(y[,1],y[,2])~xbest, iter.max=cox.max)
+
     out=list(family="bess_cox",beta=beta.fit,s.list=s.list,meanx=meanx,
-             normx=normx,deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
+             normx=normx,nsample=n,bestmodel=bestmodel,
+             deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
              lambda=lambda)
     class(out)="bess"
     return(out)

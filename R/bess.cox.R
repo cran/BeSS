@@ -14,10 +14,11 @@ bess.cox=function(x,y,beta0,s,
   im = inactive = seq(m)
   vn = dimnames(x)[[2]]
   one = rep(1,n)
-  beta=beta0
+  beta = beta0
   names(beta) = vn
+  xs = x
 
-  if(normalize==TRUE)
+  if(normalize)
   {
     mark=order(y[,1],decreasing = FALSE)
     y=y[mark,]
@@ -71,18 +72,22 @@ bess.cox=function(x,y,beta0,s,
     else{l=l+1
     gc()}
   }
+
+  xbest=xs[,which(beta!=0)]
+  bestmodel=coxph(Surv(y[,1],y[,2])~xbest, iter.max=cox.max)
+
   dev=-2*cox$loglik[2]
   nulldev=-2*cox$loglik[1]
   aic=dev+2*s
   bic=dev+log(n)*s
   ebic=dev+(log(n)+2*log(m))*s
 
-  if(normalize==T)
+  if(normalize)
   {
     beta=sqrt(n)*beta/normx
   }
 
-  return(list(family="bess_cox",beta=beta,deviance=dev,
+  return(list(family="bess_cox",beta=beta,nsample=n,deviance=dev,bestmodel=bestmodel,
               nulldeviance=nulldev,lambda=setA$max_T^2/2,AIC=aic,BIC=bic,EBIC=ebic))
 }
 

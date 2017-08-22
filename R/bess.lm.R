@@ -10,6 +10,8 @@ bess.lm=function(x,y,beta0,s,max.steps=20,normalize=FALSE)
   one = rep(1,n)
   beta=beta0
   names(beta) = vn
+  xs=x
+  ys=y
   if(normalize)
   {
     meanx = drop(one %*% x)/n
@@ -30,9 +32,14 @@ bess.lm=function(x,y,beta0,s,max.steps=20,normalize=FALSE)
   }
 
   fit=bess_lm(x,y,s,max.steps,beta0)
+
   beta=fit$beta
+  xbest=xs[,which(beta!=0)]
+  bestmodel=lm(ys~xbest)
+
   lambda=fit$max_T^2/2
   mse=mean((y-x%*%beta)^2)
+  nullmse=mean((y^2))
   aic=n*log(mse)+2*s
   bic=n*log(mse)+log(n)*s
   ebic=n*log(mse)+(log(n)+2*log(m))*s
@@ -40,10 +47,10 @@ bess.lm=function(x,y,beta0,s,max.steps=20,normalize=FALSE)
   {
     beta=sqrt(n)*beta/normx
     coef0=mu-sum(beta*meanx)
-    return(list(family="bess_gaussian",beta=beta,coef0=coef0,
-                lambda=lambda,mse=mse,AIC=aic,BIC=bic,EBIC=ebic))
-  }else return(list(family="bess_gaussian",beta=beta,coef0=0,
-                    lambda=lambda,mse=mse,AIC=aic,BIC=bic,EBIC=ebic))
+    return(list(family="bess_gaussian",beta=beta,coef0=coef0,nsample=n,bestmodel=bestmodel,
+                lambda=lambda,mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic))
+  }else return(list(family="bess_gaussian",beta=beta,coef0=0,nsample=n,bestmodel=bestmodel,
+                    lambda=lambda,mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic))
 }
 
 

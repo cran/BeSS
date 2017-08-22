@@ -2,14 +2,14 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 bess_lm <- function(X, y, T, max_steps, beta0) {
-    .Call('BeSS_bess_lm', PACKAGE = 'BeSS', X, y, T, max_steps, beta0)
+    .Call(`_BeSS_bess_lm`, X, y, T, max_steps, beta0)
 }
 
 get_A <- function(X, y, beta, coef0, T, B) {
-    .Call('BeSS_get_A', PACKAGE = 'BeSS', X, y, beta, coef0, T, B)
+    .Call(`_BeSS_get_A`, X, y, beta, coef0, T, B)
 }
 
 getcox_A <- function(X, y, beta, T, B, status) {
-    .Call('BeSS_getcox_A', PACKAGE = 'BeSS', X, y, beta, T, B, status)
+    .Call(`_BeSS_getcox_A`, X, y, beta, T, B, status)
 }
 

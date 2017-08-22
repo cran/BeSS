@@ -15,12 +15,12 @@ bess.glm=function(x,y,beta0,
     im = inactive = seq(m)
     vn = dimnames(x)[[2]]
     one = rep(1,n)
-    beta=beta0
+    beta = beta0
     names(beta) = vn
+    xs = x
 
 
-
-      if(normalize==TRUE)
+      if(normalize)
       {
         meanx = drop(one %*% x)/n
         x = scale(x, meanx, FALSE)
@@ -79,6 +79,10 @@ bess.glm=function(x,y,beta0,
         gc()}
       }
       #dev=logit$deviance
+
+      xbest=xs[,which(beta!=0)]
+      bestmodel=glm(y~xbest, family=binomial)
+
       dev=-2*sum((y*log(p) + (1-y)*log(1-p))[which(p>1e-20&p<1-1e-20)])
       nulldev=-2*sum(y*log(0.5) + (1-y)*log(0.5))
       aic=dev+2*s
@@ -91,7 +95,7 @@ bess.glm=function(x,y,beta0,
         coef0=coef0-sum(beta*meanx)
       }
 
-      return(list(family="bess_binomial",beta=beta,coef0=coef0,
+      return(list(family="bess_binomial",beta=beta,coef0=coef0,nsample=n,bestmodel=bestmodel,
                   deviance=dev,nulldeviance=nulldev,
                   lambda=setA$max_T^2/2,p=p,AIC=aic,BIC=bic,EBIC=ebic))
 }
