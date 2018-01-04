@@ -1,19 +1,39 @@
-predict.bess=function(object, newdata, type = c("ALL", "AIC", "BIC", "EBIC"),...)
+predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBIC"),...)
 {
   type <- match.arg(type)
+  method = object$method
+  if(method == "gsection"&(type%in%c("AIC","BIC","EBIC"))) stop("method gsection shouldn't match type AIC, BIC or EBIC!")
+  if(method == "sequential"&type=="opt") stop("method sequential shouldn't match type opt!")
+  if(!is.null(object$factor)){
+    factor = object$factor
+    if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
+    newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
+      return(as.factor(x))
+    })
+    newdata = model.matrix(~., data = newdata)[,-1]
+  }
+  if(is.null(colnames(newdata))) {
+    newx = as.matrix(newdata)
+  }else{
+    vn = rownames(object$beta)
+    if(any(is.na(match(vn, colnames(newdata))))) stop("names of newdata don't match training data!")
+    newx = as.matrix(newdata[,vn])
+  }
   if(object$family == "bess_gaussian")
   {
-    newx = newdata
     betas = object$beta
     coef0 = object$coef0
     y = t(newx%*%betas)+coef0
     if(type == "ALL"){
       return(y)
-    }else return(y[which.min(object[[type]]),,drop = TRUE])
+    }
+    if(type == "opt"){
+      return(y[nrow(y),,drop = TRUE])
+    }
+    return(y[which.min(object[[type]]),,drop = TRUE])
   }
   if(object$family == "bess_binomial")
   {
-    newx = newdata
     betas = object$beta
     coef = object$coef0
     class = matrix(0,ncol(betas),nrow(newx))
@@ -29,17 +49,24 @@ predict.bess=function(object, newdata, type = c("ALL", "AIC", "BIC", "EBIC"),...
     }
     if(type == "ALL"){
       return(class)
-    }else return(class[which.min(object[[type]]),,drop = TRUE])
+    }
+    if(type == "opt"){
+      return(class[nrow(class),,drop = TRUE])
+    }
+    return(class[which.min(object[[type]]),,drop = TRUE])
   }
   if(object$family=="bess_cox")
   {
-    newx = as.matrix(newdata)
     betas = object$beta
 
     betax = newx%*%betas
     if(type == "ALL"){
       return(t(betax))
-    }else return(betax[,which.min(object[[type]]),drop = TRUE])
+    }
+    if(type == "opt"){
+      return(t(betax)[ncol(betax),,drop = TRUE])
+    }
+    return(betax[,which.min(object[[type]]),drop = TRUE])
   }
 
 }
@@ -48,9 +75,23 @@ predict.bess=function(object, newdata, type = c("ALL", "AIC", "BIC", "EBIC"),...
 
 predict.bess.one=function(object,newdata, ...)
 {
+  if(!is.null(object$factor)){
+    factor = object$factor
+    if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
+    newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
+      return(as.factor(x))
+    })
+    newdata = model.matrix(~., data = newdata)[,-1]
+  }
+  if(is.null(colnames(newdata))) {
+    newx = as.matrix(newdata)
+  }else{
+    vn = names(object$beta)
+    if(any(is.na(match(vn, colnames(newdata))))) stop("names of newdata don't match training data!")
+    newx = as.matrix(newdata[,vn])
+  }
   if(object$family=="bess_gaussian")
   {
-    newx = newdata
     betas = object$beta
     coef0 = object$coef0
 
@@ -59,7 +100,6 @@ predict.bess.one=function(object,newdata, ...)
   }
   if(object$family == "bess_binomial")
   {
-    newx = newdata
     betas = object$beta
     coef = object$coef0
 
@@ -75,7 +115,6 @@ predict.bess.one=function(object,newdata, ...)
   }
   if(object$family == "bess_cox")
   {
-    newx = as.matrix(newdata)
     betas = object$beta
 
     betax = newx%*%betas;

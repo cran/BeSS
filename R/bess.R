@@ -6,13 +6,19 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
                 max.steps = 15,
                 glm.max = 1e6,
                 cox.max = 20,
-                epsilon = 1e-4)
+                factor = NULL,
+                epsilon = 1e-4,
+                weights=rep(1,nrow(x)))
 {
   family <- match.arg(family)
   if(ncol(x)==1|is.vector(x)) stop("x should be two columns at least!")
   if(missing(family)) stop("Please input family!")
+  if(!is.null(factor)) method = "sequential"
   if(family=="binomial")
   {
+    if(is.factor(y)){
+      y = as.character(y)
+    }
     if(length(unique(y))!=2)  stop("Please input binary variable!")else
       if(setequal(y_names<-unique(y),c(0,1))==FALSE)
       {
@@ -32,44 +38,51 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
   }else{
     if(nrow(x)!=nrow(y)) stop("Rows of x must be the same as rows of y!")
   }
-  if(method=="sequential"&missing(s.list)) s.list=1:min(ncol(x),round(nrow(x)/log(nrow(x))))
 
 
   if(missing(s.max)) s.max=min(ncol(x),round(nrow(x)/log(nrow(x))))
 
-#normalize x
+  weights = weights/mean(weights)
+  beta0=rep(0,ncol(x))
+  if(!is.null(factor)){
+    if(is.null(colnames(x))) colnames(x) = paste0("X",1:ncol(x),"g")
+    if(!is.data.frame(x)) x = as.data.frame(x)
+    x[,factor] = apply(x[,factor,drop=FALSE], 2, function(x){
+      x = as.factor(x)
+    })
+    group = rep(1, ncol(x))
+    names(group) = colnames(x)
+    group[factor] = apply(x[,factor,drop=FALSE], 2,function(x) {length(unique(x))})-1
+    Gi = rep(1:ncol(x), times = group)
+    beta0 = rep(beta0, times = group)
+    x = model.matrix(~., data = x)[,-1]
+  }
+  #normalize x
   x=as.matrix(x)
   xs=x
   nm = dim(x)
   n = nm[1]
-  m = nm[2]
-  im = inactive = seq(m)
+  p = nm[2]
   one = rep(1, n)
   vn = dimnames(x)[[2]]
-
-  meanx = drop(one %*% x)/n
+  meanx = drop(weights %*% x)/n
   x = scale(x, meanx, FALSE)
+  normx = sqrt(drop(weights %*% (x^2)))
+  nosignal = normx/sqrt(n) < .Machine$double.eps
+  if (any(nosignal))  normx[nosignal] = (.Machine$double.eps) * sqrt(n)
+  names(normx) = vn
+  x = sqrt(n)*scale(x, FALSE, normx)
 
 
+  if(method=="sequential"&missing(s.list)) s.list=1:min(ncol(x),round(nrow(x)/log(nrow(x))))
 
   if(family=="gaussian")
   {
-    mu = mean(y)
     ys = y
+    mu = mean(y*weights)
     y = drop(y - mu)
 
-    normx = sqrt(drop(one %*% (x^2)))
-    nosignal = normx/sqrt(n) < .Machine$double.eps
-    if (any(nosignal)) {
-      ignores = im[nosignal]
-      inactive = im[-ignores]
-      normx[nosignal] = (.Machine$double.eps) * sqrt(n)
-    }    else ignores = NULL
-    names(normx) = vn
-    x = sqrt(n)*scale(x, FALSE, normx)
-
     #initial beta
-    beta0=rep(0,m)
     gc()
 
     if(method=="gsection")
@@ -80,18 +93,19 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       beta0R=beta0
       beta0L=beta0
 
-
       fit_L1=bess.lm(x,y,
-                      beta0=beta0L,
-                      s=sL,
-                      max.steps=max.steps)
+                     beta0=beta0L,
+                     s=sL,
+                     weights=weights,
+                     max.steps=max.steps)
 
       nullmse=fit_L1$nullmse
       fit_L=fit_L1
       fit_R=bess.lm(x,y,
-                     beta0=beta0R,
-                     s=sR,
-                     max.steps=max.steps)
+                    beta0=beta0R,
+                    s=sR,
+                    weights=weights,
+                    max.steps=max.steps)
 
       beta.fit=cbind(fit_L$beta,fit_R$beta)
       mse=c(fit_L$mse,fit_R$mse)
@@ -108,9 +122,10 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         sM <- round(sL + (sR-sL)*0.618)
         s.list=c(s.list,sM)
         fit_M=bess.lm(x,y,
-                       beta0=beta0M,
-                       s=sM,
-                       max.steps=max.steps)
+                      beta0=beta0M,
+                      s=sM,
+                      weights=weights,
+                      max.steps=max.steps)
         cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\n",sep="")
 
         beta0M=fit_M$beta
@@ -141,14 +156,16 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
 
         if(sR-sL==1) break
         fit_ML=bess.lm(x,y,
-                        beta0=beta0M,
-                        s=sM,
-                        max.steps=max.steps)
+                       beta0=beta0M,
+                       s=sM,
+                       weights=weights,
+                       max.steps=max.steps)
 
         fit_MR=bess.lm(x,y,
-                        beta0=beta0M,
-                        s=sM,
-                        max.steps=max.steps)
+                       beta0=beta0M,
+                       s=sM,
+                       weights=weights,
+                       max.steps=max.steps)
         if(abs(fit_ML$mse-fit_M$mse)/abs(fit_M$mse) > epsilon &
            abs(fit_MR$mse-fit_M$mse)/abs(fit_M$mse) < epsilon)
         {break}
@@ -158,12 +175,11 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     }
     if(method=="sequential")
     {
-      fit_L=bess.lm(x,y,s=s.list[length(s.list)],max.steps = max.steps,beta0=beta0)
-      mse_L=fit_L$mse
-      #cat(mse_L,"\n")
-      nullmse=sum(y^2)/n
-      #cat(nullmse,"\n")
-      beta.fit=matrix(beta0,m,1)
+      #fit_L=bess.lm(x,y,s=s.list[length(s.list)],weights=weights,max.steps=max.steps,beta0=beta0)
+      #mse_L=fit_L$mse
+      #cat(mse_L,"\\n")
+      nullmse=sum(weights*y^2)/n
+      #cat(nullmse,"\\n")
       mse=vector()
       lambda=vector()
       aic=vector()
@@ -171,10 +187,30 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       ebic=vector()
       for(k in 1:length(s.list))
       {
-        cat("select",s.list[k],"variables","\n")
-        fit=bess.lm(x,y,s=s.list[k],max.steps = max.steps,beta0=beta.fit[,k,drop=TRUE])
-        #estimator of beta for T=k*Tao
-        beta.fit=cbind(beta.fit,fit$beta)
+        #cat("select",s.list[k],"variables","\\n")
+        if(is.null(factor)){
+          if(k == 1){
+            fit=bess.lm(x,y,s=s.list[k],weights=weights,
+                        max.steps=max.steps,beta0=beta0)
+            beta.fit = matrix(fit$beta)
+          }else{
+            fit=bess.lm(x,y,s=s.list[k],weights=weights,
+                        max.steps=max.steps,beta0=beta.fit[,k-1,drop=TRUE])
+            beta.fit=cbind(beta.fit,fit$beta)
+          }
+        }else{
+          if(k == 1){
+            fit=gbess.lm(x,y,s=s.list[k],weights=weights,Gi=Gi,
+                         max.steps=max.steps,beta0=beta0)
+            beta.fit = matrix(fit$beta)
+            s.list[k] = fit$gr_size
+          }else{
+            fit=gbess.lm(x,y,s=s.list[k],weights=weights,Gi=Gi,
+                         max.steps=max.steps,beta0=beta.fit[,k-1,drop=TRUE])
+            beta.fit=cbind(beta.fit,fit$beta)
+            s.list[k] = fit$gr_size
+          }
+        }
         #mse
         mse[k]=fit$mse
         #lambda
@@ -182,13 +218,10 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
         aic[k]=fit$AIC
         bic[k]=fit$BIC
         ebic[k]=fit$EBIC
-
-        #cat(abs((mse[k]-mse_L)/((nullmse-mse_L)*(L-s.list[k]))),"\n")
-        if(s.list[k]==s.list[length(s.list)]) break
-        if(abs((mse[k]-mse_L)/((nullmse-mse_L)*(s.list[length(s.list)]-s.list[k])))<epsilon) break
+        #cat(abs((mse[k]-mse_L)/((nullmse-mse_L)*(L-s.list[k]))),"\\n")
+        #if(s.list[k]==s.list[length(s.list)]) break
+        #if(abs((mse[k]-mse_L)/((nullmse-mse_L)*(s.list[length(s.list)]-s.list[k])))<epsilon) break
       }
-      beta.fit=beta.fit[,-1,drop=FALSE]
-      s.list=s.list[1:k]
     }
 
 
@@ -199,146 +232,141 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     names(coef0)=s.list
 
     xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
-    bestmodel=lm(ys~xbest)
+    bestmodel=lm(ys~xbest, weights=weights)
 
-    out=list(family="bess_gaussian",beta=beta.fit,coef0=coef0,
+    out=list(family="bess_gaussian",method=method,beta=beta.fit,coef0=coef0,
              s.list=s.list,meanx=meanx,normx=normx,meany=mu,nsample=n,bestmodel=bestmodel,
-             mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,lambda=lambda)
+             mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,lambda=lambda,max.steps=max.steps,
+             factor=factor)
     class(out)="bess"
     return(out)
   }
 
   if(family=="binomial")
   {
-    normx = sqrt(drop(one %*% (x^2)))
-    nosignal = normx/sqrt(n) < .Machine$double.eps
-    if (any(nosignal)) {
-      ignores = im[nosignal]
-      inactive = im[-ignores]
-      normx[nosignal] = (.Machine$double.eps) * sqrt(n)
-    }    else ignores = NULL
-    names(normx) = vn
-    x = sqrt(n)*scale(x, FALSE, normx)
-
-    beta0=rep(0,m)
+    beta0=rep(0,ncol(x))
     intercept=0
     gc()
 
     if(method=="gsection")
     {
-    k = 1
-    sL=s.min
-    sR=s.max
-    beta0R=beta0
-    beta0L=beta0
-    coef0L=intercept
-    coef0R=intercept
+      k = 1
+      sL=s.min
+      sR=s.max
+      beta0R=beta0
+      beta0L=beta0
+      coef0L=intercept
+      coef0R=intercept
 
-    fit_L1=bess.glm(x=x,y=y,
-                    beta0=beta0L,
-                    intercept=coef0L,
-                    s=sL,
-                    glm.max=glm.max,
-                    max.steps=max.steps)
+      fit_L1=bess.glm(x=x,y=y,
+                      beta0=beta0L,
+                      intercept=coef0L,
+                      s=sL,
+                      glm.max=glm.max,
+                      max.steps=max.steps,
+                      weights=weights)
 
-    nulldev=fit_L1$nulldeviance
+      nulldev=fit_L1$nulldeviance
 
-    fit_L=fit_L1
-    fit_R=bess.glm( x=x,y=y,
-                    beta0=beta0R,
-                    intercept=coef0R,
-                    s=sR,
-                    glm.max=glm.max,
-                    max.steps=max.steps)
+      fit_L=fit_L1
+      fit_R=bess.glm( x=x,y=y,
+                      beta0=beta0R,
+                      intercept=coef0R,
+                      s=sR,
+                      glm.max=glm.max,
+                      max.steps=max.steps,
+                      weights=weights)
 
-    beta.fit=cbind(fit_L$beta,fit_R$beta)
-    coef0.fit=c(fit_L$coef0,fit_R$coef0)
-    dev=c(fit_L$deviance,fit_R$deviance)
-    lambda=c(fit_L$lambda,fit_R$lambda)
+      beta.fit=cbind(fit_L$beta,fit_R$beta)
+      coef0.fit=c(fit_L$coef0,fit_R$coef0)
+      dev=c(fit_L$deviance,fit_R$deviance)
+      lambda=c(fit_L$lambda,fit_R$lambda)
 
-    beta0M=fit_R$beta
-    coef0M=fit_R$coef0
-    s.list=c(sL,sR)
-    aic=c(fit_L$AIC,fit_R$AIC)
-    bic=c(fit_L$BIC,fit_R$BIC)
-    ebic=c(fit_L$EBIC,fit_R$EBIC)
-    while(k<=K.max)
-    {
-      sM <- round(sL + (sR-sL)*0.618)
-      s.list=c(s.list,sM)
-      fit_M=bess.glm(x=x,y=y,
-                     beta0=beta0M,
-                     intercept=coef0M,
-                     s=sM,
-                     glm.max=glm.max,
-                     max.steps=max.steps)
-      cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\n",sep="")
-
-      beta0M=fit_M$beta
-      beta.fit=cbind(beta.fit,beta0M)
-
-      coef0M=fit_M$coef0
-      coef0.fit=c(coef0.fit,coef0M)
-
-      dev=c(dev,fit_M$deviance)
-      lambda=c(lambda,fit_M$lambda)
-      aic=c(aic, fit_M$AIC)
-      bic=c(bic, fit_M$BIC)
-      ebic=c(ebic, fit_M$EBIC)
-
-      if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
-         abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
+      beta0M=fit_R$beta
+      coef0M=fit_R$coef0
+      s.list=c(sL,sR)
+      aic=c(fit_L$AIC,fit_R$AIC)
+      bic=c(fit_L$BIC,fit_R$BIC)
+      ebic=c(fit_L$EBIC,fit_R$EBIC)
+      while(k<=K.max)
       {
-        sR <- sM
-        fit_R=fit_M
-      }else if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
-               abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) > epsilon)
-      {
-        sL <- sM
-        fit_L=fit_M
-      }else
-      {
-        sR=sM
-        fit_R=fit_M
-        sL=s.min
-        fit_L=fit_L1
-      }
+        sM <- round(sL + (sR-sL)*0.618)
+        s.list=c(s.list,sM)
+        fit_M=bess.glm(x=x,y=y,
+                       beta0=beta0M,
+                       intercept=coef0M,
+                       s=sM,
+                       glm.max=glm.max,
+                       max.steps=max.steps,
+                       weights=weights)
+        cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\\n",sep="")
 
-      if(sR-sL==1) break
-      fit_ML=bess.glm(x=x,y=y,
-                     beta0=beta0M,
-                     intercept=coef0M,
-                     s=sM,
-                     glm.max=glm.max,
-                     max.steps=max.steps)
+        beta0M=fit_M$beta
+        beta.fit=cbind(beta.fit,beta0M)
 
-      fit_MR=bess.glm(x=x,y=y,
-                     beta0=beta0M,
-                     intercept=coef0M,
-                     s=sM,
-                     glm.max=glm.max,
-                     max.steps=max.steps)
-      #if(abs(fit_ML$deviance-fit_M$deviance)/abs(fit_M$deviance) > epsilon &
+        coef0M=fit_M$coef0
+        coef0.fit=c(coef0.fit,coef0M)
+
+        dev=c(dev,fit_M$deviance)
+        lambda=c(lambda,fit_M$lambda)
+        aic=c(aic, fit_M$AIC)
+        bic=c(bic, fit_M$BIC)
+        ebic=c(ebic, fit_M$EBIC)
+
+        if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
+           abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
+        {
+          sR <- sM
+          fit_R=fit_M
+        }else if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
+                 abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) > epsilon)
+        {
+          sL <- sM
+          fit_L=fit_M
+        }else
+        {
+          sR=sM
+          fit_R=fit_M
+          sL=s.min
+          fit_L=fit_L1
+        }
+
+        if(sR-sL==1) break
+        fit_ML=bess.glm(x=x,y=y,
+                        beta0=beta0M,
+                        intercept=coef0M,
+                        s=sM,
+                        glm.max=glm.max,
+                        max.steps=max.steps,
+                        weights=weights)
+
+        fit_MR=bess.glm(x=x,y=y,
+                        beta0=beta0M,
+                        intercept=coef0M,
+                        s=sM,
+                        glm.max=glm.max,
+                        max.steps=max.steps,
+                        weights=weights)
+        #if(abs(fit_ML$deviance-fit_M$deviance)/abs(fit_M$deviance) > epsilon &
         # abs(fit_MR$deviance-fit_M$deviance)/abs(fit_M$deviance) < epsilon)
-     # {break}
-      if(abs(fit_ML$deviance-fit_M$deviance)/abs(nulldev) > epsilon &
-         abs(fit_MR$deviance-fit_M$deviance)/abs(nulldev) < epsilon)
-      {break}
+        # {break}
+        if(abs(fit_ML$deviance-fit_M$deviance)/abs(nulldev) > epsilon &
+           abs(fit_MR$deviance-fit_M$deviance)/abs(nulldev) < epsilon)
+        {break}
 
-    k=k+1
-    }
+        k=k+1
+      }
     }
 
     if(method=="sequential")
     {
-     fit_L=bess.glm(x=x,y=y,beta0=beta0,intercept=intercept,
-                     s=s.list[length(s.list)],glm.max=glm.max,max.steps = max.steps)
-      beta.fit=matrix(beta0,m,1)
-      coef0.fit=intercept
-      dev_L=fit_L$deviance
-      nulldev=-2*sum((y*log(0.5) + (1-y)*log(0.5)))
+     # fit_L=bess.glm(x=x,y=y,beta0=beta0,intercept=intercept,
+      #               s=s.list[length(s.list)],glm.max=glm.max,max.steps = max.steps,
+      #               weights=weights)
+     # dev_L=fit_L$deviance
+      nulldev=-2*sum(weights*(y*log(0.5) + (1-y)*log(0.5)))
 
-      if(abs(dev_L/nulldev)>0.5) dev_L=0
+     # if(abs(dev_L/nulldev)>0.5) dev_L=0
       dev=vector()
       lambda=vector()
       aic=vector()
@@ -346,27 +374,46 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       ebic=vector()
       for(k in 1:length(s.list))
       {
-        cat("select",s.list[k],"variables","\n")
-
-        fit=bess.glm(x=x,y=y,beta0=beta.fit[,k],intercept=coef0.fit[k],
+        #cat("select",s.list[k],"variables","\\n")
+        if(is.null(factor)){
+          if(k == 1){
+            fit=bess.glm(x=x,y=y,beta0=beta0,intercept=intercept,
+                         s=s.list[k],glm.max=glm.max,
+                         max.steps=max.steps,weights=weights)
+            beta.fit = matrix(fit$beta)
+            coef0.fit = fit$coef0
+          }else{
+            fit=bess.glm(x=x,y=y,beta0=beta.fit[,k-1,drop=TRUE],intercept=coef0.fit[k-1],
+                         s=s.list[k],glm.max=glm.max,
+                         max.steps=max.steps,weights=weights)
+            beta.fit = cbind(beta.fit,fit$beta)
+            coef0.fit = c(coef0.fit,fit$coef0)
+          }
+        }else{
+          if(k == 1){
+            fit=gbess.glm(x=x,y=y,Gi=Gi,beta0=beta0,intercept=intercept,
+                         s=s.list[k],glm.max=glm.max,
+                         max.steps=max.steps,weights=weights)
+            beta.fit = matrix(fit$beta)
+            coef0.fit = fit$coef0
+            s.list[k] = fit$gr_size
+          }else{
+            fit=gbess.glm(x,y,Gi=Gi,beta0=beta.fit[,k-1,drop=TRUE],intercept=coef0.fit[k-1],
                           s=s.list[k],glm.max=glm.max,
-                          max.steps=max.steps)
-
+                          max.steps=max.steps,weights=weights)
+            beta.fit = cbind(beta.fit,fit$beta)
+            coef0.fit = c(coef0.fit,fit$coef0)
+            s.list[k] = fit$gr_size
+          }
+        }
         dev[k]=fit$deviance
         lambda[k]=fit$lambda
         aic[k]=fit$AIC
         bic[k]=fit$BIC
         ebic[k]=fit$EBIC
-        beta.fit=cbind(beta.fit,fit$beta)
-        coef0.fit=c(coef0.fit,fit$coef0)
-        #cat(abs((dev[k]-dev_L)/((s.list[length(s.list)]-s.list[k])*(nulldev))),"\n")
-        if(s.list[k]==s.list[length(s.list)]) break
-        if(abs((dev[k]-dev_L)/((s.list[length(s.list)]-s.list[k])*(nulldev-dev_L)))<epsilon) break
-
-    }
-      beta.fit=beta.fit[,-1,drop=FALSE]
-      coef0.fit=coef0.fit[-1]
-      s.list=s.list[1:k]
+        #cat(abs((dev[k]-dev_L)/((s.list[length(s.list)]-s.list[k])*(nulldev))),"\\n")
+        #if(abs((dev[k]-dev_L)/((s.list[length(s.list)]-s.list[k])*(nulldev-dev_L)))<epsilon) break
+      }
     }
 
     beta.fit=sqrt(n)*(beta.fit)/normx
@@ -376,22 +423,22 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     names(coef0.fit) = s.list
 
     xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
-    bestmodel=glm(y~xbest, family=binomial)
+    bestmodel=glm(y~xbest, family=binomial, weights=weights)
 
     if(!setequal(y_names,c(0,1)))
     {
-      out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
+      out=list(family="bess_binomial",method=method,beta=beta.fit,coef0=coef0.fit,s.list=s.list,
                meanx=meanx,normx=normx,nsample=n,bestmodel=bestmodel,
                deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
-               lambda=lambda,y_names=y_names)
+               lambda=lambda,y_names=y_names,max.steps=max.steps,factor=factor)
       class(out)="bess"
       return(out)
     }else
     {
-      out=list(family="bess_binomial",beta=beta.fit,coef0=coef0.fit,s.list=s.list,
+      out=list(family="bess_binomial",method=method,beta=beta.fit,coef0=coef0.fit,s.list=s.list,
                meanx=meanx,normx=normx,nsample=n,bestmodel=bestmodel,
                deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
-               lambda=lambda)
+               lambda=lambda,max.steps=max.steps,factor=factor)
       class(out)="bess"
       return(out)
     }
@@ -400,118 +447,113 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
   if(family=="cox")
   {
     #normalize
-    normx = sqrt(drop(one %*% (x^2)))
     mark=order(y[,1],decreasing = FALSE)
     y=y[mark,]
-
-    nosignal = normx/sqrt(n) < .Machine$double.eps
-    if (any(nosignal)) {
-      ignores = im[nosignal]
-      inactive = im[-ignores]
-      normx[nosignal] = (.Machine$double.eps) * sqrt(n)
-    }    else ignores = NULL
-    names(normx) = vn
-    x = sqrt(n)*scale(x, FALSE, normx)
+    weights=weights[mark]
     x=x[mark,]
-
-    beta0=rep(0,m)
+    beta0=rep(0,p)
     gc()
 
     if(method=="gsection")
     {
-    k = 1
-    sL=s.min
-    sR=s.max
-    beta0R=beta0
-    beta0L=beta0
+      k = 1
+      sL=s.min
+      sR=s.max
+      beta0R=beta0
+      beta0L=beta0
 
-    fit_L1=bess.cox(x,y,
-                    beta0=beta0L,
-                    s=sL,
-                    cox.max=cox.max,
-                    max.steps=max.steps)
+      fit_L1=bess.cox(x,y,
+                      beta0=beta0L,
+                      s=sL,
+                      cox.max=cox.max,
+                      max.steps=max.steps,
+                      weights=weights)
 
-    nulldev=fit_L1$nulldeviance
-    fit_L=fit_L1
-    fit_R=bess.cox(x,y,
-                   beta0=beta0R,
-                   s=sR,
-                   cox.max=cox.max,
-                   max.steps=max.steps)
-
-    beta.fit=cbind(fit_L$beta,fit_R$beta)
-    dev=c(fit_L$deviance,fit_R$deviance)
-    lambda=c(fit_L$lambda,fit_R$lambda)
-
-    beta0M=fit_R$beta
-    s.list=c(sL,sR)
-    aic=c(fit_L$AIC,fit_R$AIC)
-    bic=c(fit_L$BIC,fit_R$BIC)
-    ebic=c(fit_L$EBIC,fit_R$EBIC)
-    while(k<=K.max)
-    {
-      sM <- round(sL + (sR-sL)*0.618)
-      s.list=c(s.list,sM)
-      fit_M=bess.cox(x,y,
-                     beta0=beta0M,
-                     s=sM,
+      nulldev=fit_L1$nulldeviance
+      fit_L=fit_L1
+      fit_R=bess.cox(x,y,
+                     beta0=beta0R,
+                     s=sR,
                      cox.max=cox.max,
-                     max.steps=max.steps)
-      cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\n",sep="")
+                     max.steps=max.steps,
+                     weights=weights)
 
-      beta0M=fit_M$beta
-      beta.fit=cbind(beta.fit,beta0M)
+      beta.fit=cbind(fit_L$beta,fit_R$beta)
+      dev=c(fit_L$deviance,fit_R$deviance)
+      lambda=c(fit_L$lambda,fit_R$lambda)
 
-      dev=c(dev,fit_M$deviance)
-      lambda=c(lambda,fit_M$lambda)
-      aic=c(aic, fit_M$AIC)
-      bic=c(bic, fit_M$BIC)
-      ebic=c(ebic, fit_M$EBIC)
-      if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
-         abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
+      beta0M=fit_R$beta
+      s.list=c(sL,sR)
+      aic=c(fit_L$AIC,fit_R$AIC)
+      bic=c(fit_L$BIC,fit_R$BIC)
+      ebic=c(fit_L$EBIC,fit_R$EBIC)
+      while(k<=K.max)
       {
-        sR <- sM
-        fit_R=fit_M
-      }else if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev) > epsilon &
-               abs(fit_R$deviance-fit_M$deviance)/abs(nulldev) > epsilon)
-      {
-        sL <- sM
-        fit_L=fit_M
-      }else
-      {
-        sR=sM
-        fit_R=fit_M
-        sL=s.min
-        fit_L=fit_L1
+        sM <- round(sL + (sR-sL)*0.618)
+        s.list=c(s.list,sM)
+        fit_M=bess.cox(x,y,
+                       beta0=beta0M,
+                       s=sM,
+                       cox.max=cox.max,
+                       max.steps=max.steps,
+                       weights=weights)
+        cat(k,"-th iteration s.left:",sL," s.split:",sM," s.right:",sR,"\\n",sep="")
+
+        beta0M=fit_M$beta
+        beta.fit=cbind(beta.fit,beta0M)
+
+        dev=c(dev,fit_M$deviance)
+        lambda=c(lambda,fit_M$lambda)
+        aic=c(aic, fit_M$AIC)
+        bic=c(bic, fit_M$BIC)
+        ebic=c(ebic, fit_M$EBIC)
+        if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev*(sM-sL)) > epsilon &
+           abs(fit_R$deviance-fit_M$deviance)/abs(nulldev*(sM-sR)) < epsilon)
+        {
+          sR <- sM
+          fit_R=fit_M
+        }else if(abs(fit_L$deviance-fit_M$deviance)/abs(nulldev) > epsilon &
+                 abs(fit_R$deviance-fit_M$deviance)/abs(nulldev) > epsilon)
+        {
+          sL <- sM
+          fit_L=fit_M
+        }else
+        {
+          sR=sM
+          fit_R=fit_M
+          sL=s.min
+          fit_L=fit_L1
+        }
+
+        if(sR-sL==1) break
+        fit_ML=bess.cox(x,y,
+                        beta0=beta0M,
+                        s=sM,
+                        cox.max=cox.max,
+                        max.steps=max.steps,
+                        weights=weights)
+
+        fit_MR=bess.cox(x,y,
+                        beta0=beta0M,
+                        s=sM,
+                        cox.max=cox.max,
+                        max.steps=max.steps,
+                        weights=weights)
+        if(abs(fit_ML$deviance-fit_M$deviance)/abs(fit_M$deviance) > epsilon &
+           abs(fit_MR$deviance-fit_M$deviance)/abs(fit_M$deviance) < epsilon)
+        {break}
+
+        k=k+1
       }
-
-      if(sR-sL==1) break
-      fit_ML=bess.cox(x,y,
-                      beta0=beta0M,
-                      s=sM,
-                      cox.max=cox.max,
-                      max.steps=max.steps)
-
-      fit_MR=bess.cox(x,y,
-                      beta0=beta0M,
-                      s=sM,
-                      cox.max=cox.max,
-                      max.steps=max.steps)
-      if(abs(fit_ML$deviance-fit_M$deviance)/abs(fit_M$deviance) > epsilon &
-         abs(fit_MR$deviance-fit_M$deviance)/abs(fit_M$deviance) < epsilon)
-      {break}
-
-      k=k+1
     }
-  }
 
     if(method=="sequential")
     {
       fit_L=bess.cox(x=x,y=y,beta0=beta0,s=s.list[length(s.list)],cox.max=cox.max,
-                     max.steps=max.steps)
-      beta.fit=matrix(beta0,m,1)
+                     max.steps=max.steps,weights=weights)
+      beta.fit=matrix(beta0,p,1)
       dev_L=fit_L$deviance
-     # cat(dev_L,"\n")
+      # cat(dev_L,"\\n")
       nulldev=fit_L$nulldeviance
 
       dev=vector()
@@ -521,21 +563,21 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
       ebic=vector()
       for(k in 1:length(s.list))
       {
-        cat("select",s.list[k],"variables","\n")
+        #cat("select",s.list[k],"variables","\\n")
 
         fit=bess.cox(x=x,y=y,beta0=beta.fit[,k],
-                          s=s.list[k],cox.max=cox.max,
-                          max.steps=max.steps)
+                     s=s.list[k],cox.max=cox.max,
+                     max.steps=max.steps,weights=weights)
 
         dev[k]=fit$deviance
-        #cat(dev[k],"\n")
+        #cat(dev[k],"\\n")
         lambda[k]=fit$lambda
         beta.fit=cbind(beta.fit,fit$beta)
         aic[k]=fit$AIC
         bic[k]=fit$BIC
         ebic[k]=fit$EBIC
 
-        #cat(abs((dev[k]-dev_L)/((nulldev-dev_L)*(s.list[length(s.list)]-s.list[k]))),"\n")
+        #cat(abs((dev[k]-dev_L)/((nulldev-dev_L)*(s.list[length(s.list)]-s.list[k]))),"\\n")
         if(s.list[k]==s.list[length(s.list)]) break
         if(abs((dev[k]-dev_L)/((nulldev-dev_L)*(s.list[length(s.list)]-s.list[k])))<epsilon) break
       }
@@ -549,16 +591,14 @@ bess = function(x, y, family = c("gaussian", "binomial", "cox"),
     rownames(beta.fit) = vn
 
     xbest=xs[,which(beta.fit[,ncol(beta.fit),drop=TRUE]!=0)]
-    bestmodel=coxph(Surv(y[,1],y[,2])~xbest, iter.max=cox.max)
+    bestmodel=coxph(Surv(y[,1],y[,2])~xbest, iter.max=cox.max, weights=weights)
 
-    out=list(family="bess_cox",beta=beta.fit,s.list=s.list,meanx=meanx,
+    out=list(family="bess_cox",method=method,beta=beta.fit,s.list=s.list,meanx=meanx,
              normx=normx,nsample=n,bestmodel=bestmodel,
              deviance=dev,nulldeviance=nulldev,AIC=aic,BIC=bic,EBIC=ebic,
-             lambda=lambda)
+             lambda=lambda,max.steps=max.steps)
     class(out)="bess"
     return(out)
   }
 
 }
-
-

@@ -1,17 +1,16 @@
-\name{logLik.bess}
-\alias{logLik.bess}
-\title{Extract the loglikelihood from a "bess" object.}
+\name{summary.bess}
+\alias{summary.bess}
+\title{summary method for a "bess" object}
 \description{
-  Similar to other logLik methods, which returns loglikelihood from a fitted "\code{bess}" object.
+  Print a summary of the "\code{bess}" object.
 }
 \usage{
-  \method{logLik}{bess}(object,...)
+  \method{summary}{bess}(object, ...)
 }
 \arguments{
-  \item{object}{Output from the \code{bess} function.}
-  \item{\dots}{Additional arguments affecting the predictions produced.}
+  \item{object}{a "\code{bess}" object}
+  \item{\dots}{additional print arguments}
 }
-\value{The value of the loglikelihood extracted from the "bess" object.}
 
 \author{
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
@@ -20,15 +19,13 @@
  Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
 }
 
-
 \seealso{
 \code{\link{bess}}, \code{\link{bess.one}}
 }
 
 \examples{
-
 data <- gen.data(500, 20, family = "gaussian", 10, 0.2, 1)
 fit <- bess(data$x, data$y, family = "gaussian")
-logLik(fit)
+summary(fit)
 
 }

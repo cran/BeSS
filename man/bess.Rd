@@ -5,9 +5,17 @@
   Best subset selection for generalized linear model and Cox's proportional model.
 }
 \usage{
-  bess(x, y, family = c("gaussian", "binomial", "cox"), method = "gsection",
-  s.min = 1, s.max, s.list, K.max = 20, max.steps = 15, glm.max = 1e6, cox.max = 20,
-  epsilon = 1e-4)
+bess(x, y, family = c("gaussian", "binomial", "cox"),
+     method = "gsection", s.min = 1,
+     s.max,
+     s.list,
+     K.max = 20,
+     max.steps = 15,
+     glm.max = 1e6,
+     cox.max = 20,
+	 factor = NULL,
+     epsilon = 1e-4,
+	 weights=rep(1,nrow(x)))
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -23,8 +31,9 @@
     \item{max.steps}{The maximum number of iterations in \code{bess} function. In linear regression, only a few steps can gurantee the convergence. Default is 15.}
   \item{glm.max}{The maximum number of iterations for solving the maximum likelihood problem on the active set at each step in the primal dual active set algorithm.Only used in the logistic regression for family="binomial". Default is 1e6.}
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set at each step in the primal dual active set algorithm. Only used in Cox's model for family="cox". Default is 20.}
-
+  \item{factor}{Which variable to be factored. Should be NULL or a numeric vector.}
   \item{epsilon}{The tolerance for an early stoping rule in the method "sequential". The early stopping rule is defined as \eqn{\|Y-X\beta\|/n \leq \epsilon}.}
+  \item{weights}{Observation weights. Default is 1 for each observation}
 
 }
 \details{
@@ -46,6 +55,7 @@ A list with class attribute 'bess' and named components:
   \item{AIC}{The value of \eqn{-2\times logL + 2 \|\beta\|_0}.}
   \item{BIC}{The value of \eqn{-2\times logL+ log(n) \|\beta\|_0}.}
   \item{EBIC}{The value of \eqn{-2\times logL+ (log(n)+2\times log(p)) \|\beta\|_0}.}
+  \item{factor}{Which variable to be factored. Should be NULL or a numeric vector.}
 }
 
 
@@ -53,7 +63,7 @@ A list with class attribute 'bess' and named components:
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S., and Wang, X. (2017) BeSS: A R package for best subset selection in GLM and CoxPH Models, Technical reports.
+ Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
 }
 
 \seealso{
@@ -75,14 +85,14 @@ data <- gen.data(n, p, family = "gaussian", K, rho, sigma)
 # Best subset selection
 fit1 <- bess(data$x, data$y, family = "gaussian")
 print(fit1)
-coef(fit1, sparse=TRUE)  # The estimated coefficients
+#coef(fit1, sparse=TRUE)  # The estimated coefficients
 bestmodel <- fit1$bestmodel
-summary(bestmodel)
+#summary(bestmodel)
 
 # Plot solution path and the loss function
 plot(fit1, type = "both", breaks = TRUE)
 
-
+## Not run:
 #--------------logistic model--------------#
 
 # Generate simulated data
@@ -92,9 +102,9 @@ data <- gen.data(n, p, family="binomial", 5, rho, sigma)
 fit2 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
              family = "binomial", epsilon = 0)
 print(fit2)
-coef(fit2, sparse = TRUE)
+#coef(fit2, sparse = TRUE)
 bestmodel <- fit2$bestmodel
-summary(bestmodel)
+#summary(bestmodel)
 
 # Plot solution path and the loss function
 plot(fit2, type = "both", breaks = TRUE, K = 5)
@@ -108,9 +118,9 @@ data <- gen.data(n, p, K, rho, sigma, c = 10, family = "cox", scal = 10)
 fit3 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
              family = "cox")
 print(fit3)
-coef(fit3, sparse = TRUE)
+#coef(fit3, sparse = TRUE)
 bestmodel <- fit3$bestmodel
-summary(bestmodel)
+#summary(bestmodel)
 
 # Plot solution path and the loss function
 plot(fit3, type = "both", breaks = TRUE, K = 10)
@@ -128,6 +138,25 @@ fit <- bess(data$x, data$y, method="sequential", family = "gaussian", epsilon = 
 plot(fit, type = "both", breaks = TRUE, K = 10)
 
 
+data("prostate")
+x = prostate[,-9]
+y = prostate[,9]
+
+fit.ungroup = bess(x, y, s.list = 1:ncol(x), method = "sequential")
+fit.group = bess(x, y, s.list = 1:ncol(x), factor = c("gleason"))
+
+
+#---------------SAheart---------------#
+data("SAheart")
+y = SAheart[,5]
+x = SAheart[,-5]
+x$ldl[x$ldl<5] = 1
+x$ldl[x$ldl>=5&x$ldl<10] = 2
+x$ldl[x$ldl>=10] = 3
+
+fit.ungroup = bess(x, y, s.list = 1:ncol(x), method = "sequential", family = "binomial")
+fit.group = bess(x, y, s.list = 1:ncol(x), factor = c("ldl"), family = "binomial")
+## End(Not run)
 }
 
 

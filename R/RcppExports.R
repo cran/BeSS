@@ -5,11 +5,23 @@ bess_lm <- function(X, y, T, max_steps, beta0) {
     .Call(`_BeSS_bess_lm`, X, y, T, max_steps, beta0)
 }
 
-get_A <- function(X, y, beta, coef0, T, B) {
-    .Call(`_BeSS_get_A`, X, y, beta, coef0, T, B)
+get_A <- function(X, y, beta, coef0, T, B, weights) {
+    .Call(`_BeSS_get_A`, X, y, beta, coef0, T, B, weights)
 }
 
-getcox_A <- function(X, y, beta, T, B, status) {
-    .Call(`_BeSS_getcox_A`, X, y, beta, T, B, status)
+getcox_A <- function(X, y, beta, T, B, status, weights) {
+    .Call(`_BeSS_getcox_A`, X, y, beta, T, B, status, weights)
+}
+
+EigenR <- function(X) {
+    .Call(`_BeSS_EigenR`, X)
+}
+
+gbess_lm <- function(X, y, G, index, PhiG, invPhiG, T0, max_steps, beta0, n, p, N) {
+    .Call(`_BeSS_gbess_lm`, X, y, G, index, PhiG, invPhiG, T0, max_steps, beta0, n, p, N)
+}
+
+gget_A <- function(X, y, G, index, T0, beta0, coef0, n, p, N, weights, B00) {
+    .Call(`_BeSS_gget_A`, X, y, G, index, T0, beta0, coef0, n, p, N, weights, B00)
 }
 

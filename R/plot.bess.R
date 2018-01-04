@@ -17,19 +17,16 @@ plot.bess=function(x,type=c("loss","coefficients","both"),breaks=TRUE,K=NULL, ..
   if(type=="loss")
   {
     plot_loss(dev,s.list,K,breaks, mar = c(3,4,3,4))
-    mtext("Loss function",3,cex=1.0,line=1 ,font=2)
   }
   if(type=="coefficients")
   {
     plot_solution(beta,c(0, s.list),K,breaks, mar = c(3,4,3,4))
-    mtext("Solution path",3,cex=1.0,line=1,font=2)
   }
   if(type=="both")
   {
     layout(matrix(c(1,2),2,1,byrow=TRUE),heights=c(0.45,0.55), widths=1)
     oldpar <- par(las=1, mar=c(2,4,2,4), oma=c(2.5,0.5,1.5,0.5))
     plot_loss(dev,s.list,K,breaks,show_x = FALSE)
-    mtext("Loss function and Solution Path",3, outer=FALSE, line=1, cex=1.0, font=2)
     plot_solution(beta, c(0, s.list), K,breaks)
     par(oldpar)
     par(mfrow=c(1,1))
