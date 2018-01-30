@@ -77,10 +77,10 @@ gbess.lm = function(x, y, Gi, beta0, s, max.steps = 20,
     coef0=mu-sum(beta*meanx)
     return(list(family="bess_gaussian",beta=beta,coef0=coef0,nsample=n,bestmodel=bestmodel,
                 lambda=lambda,mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,max.steps=max.steps,
-                factor=factor,gr_size=fit$gr_size))
+                gr_size=fit$gr_size))
   }else return(list(family="bess_gaussian",beta=beta,coef0=0,nsample=n,bestmodel=bestmodel,
                     lambda=lambda,mse=mse,nullmse=nullmse,AIC=aic,BIC=bic,EBIC=ebic,max.steps=max.steps,
-                    factor=factor,gr_size=fit$gr_size))
+                    gr_size=fit$gr_size))
 }
 
 

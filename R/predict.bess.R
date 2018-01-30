@@ -5,7 +5,7 @@ predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBI
   if(method == "gsection"&(type%in%c("AIC","BIC","EBIC"))) stop("method gsection shouldn't match type AIC, BIC or EBIC!")
   if(method == "sequential"&type=="opt") stop("method sequential shouldn't match type opt!")
   if(!is.null(object$factor)){
-    factor = object$factor
+    factor = c(object$factor)
     if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
     newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
       return(as.factor(x))
@@ -76,7 +76,7 @@ predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBI
 predict.bess.one=function(object,newdata, ...)
 {
   if(!is.null(object$factor)){
-    factor = object$factor
+    factor = c(object$factor)
     if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
     newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
       return(as.factor(x))

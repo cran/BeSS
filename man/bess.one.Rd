@@ -86,7 +86,7 @@ data <- gen.data(n, p, family = "binomial", K, rho, sigma)
 
 # Best subset selection
 fit2 <- bess.one(data$x, data$y, family = "binomial", s = 10, normalize = TRUE)
-bestmodel <- fit2$fit2$bestmodel
+bestmodel <- fit2$bestmodel
 #summary(bestmodel)
 
 #--------------cox model--------------#
@@ -96,7 +96,7 @@ data <- gen.data(n, p, K, rho, sigma, c=10, family="cox", scal=10)
 
 # Best subset selection
 fit3 <- bess.one(data$x, data$y, s = 10, family = "cox", normalize = TRUE)
-bestmodel <- fit3$fit2$bestmodel
+bestmodel <- fit3$bestmodel
 #summary(bestmodel)
 
 #----------------------High dimensional linear models--------------------#

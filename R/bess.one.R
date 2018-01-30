@@ -73,6 +73,7 @@ bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
                   s=s,
                   cox.max=cox.max,
                   max.steps=max.steps,
+                  factor=factor,
                   weights=weights,
                   normalize=normalize)
      class(out)="bess.one"

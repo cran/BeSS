@@ -12,6 +12,7 @@
 \alias{bess.cox}
 \alias{gbess.lm}
 \alias{gbess.glm}
+\alias{gbess.cox}
 \alias{EigenR}
 \alias{uniqueR}
 \description{Internal BeSS functions}
@@ -21,12 +22,14 @@ bess.lm(x, y, beta0, s, max.steps=20, factor = NULL,
 bess.glm(x, y, beta0, intercept=0, s, max.steps=20,
          glm.max=1e6, factor = NULL,
          weights=rep(1,nrow(x)), normalize=FALSE)
-bess.cox(x, y, beta0, s, cox.max=20, max.steps=20, weights=rep(1,nrow(x)),
-         normalize=FALSE)
+bess.cox(x, y, beta0, s, cox.max=20, max.steps=20, factor=NULL,
+         weights=rep(1,nrow(x)), normalize=FALSE)
 gbess.lm(x, y, Gi, beta0, s, max.steps = 20,
          weights=rep(1,nrow(x)), normalize=FALSE)
-gbess.glm(x, y, Gi, beta0, intercept=0, s, max.steps = 5, glm.max=1e6,
-          weights=rep(1,nrow(x)), normalize=FALSE)		 
+gbess.glm(x, y, Gi, beta0, intercept=0, s, max.steps = 10, glm.max=1e6,
+          weights=rep(1,nrow(x)), normalize=FALSE)	
+gbess.cox(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
+          weights=rep(1,nrow(x)), normalize=FALSE)		  
 }
 \author{
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.

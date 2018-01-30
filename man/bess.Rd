@@ -99,7 +99,7 @@ plot(fit1, type = "both", breaks = TRUE)
 data <- gen.data(n, p, family="binomial", 5, rho, sigma)
 
 # Best subset selection
-fit2 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
+fit2 <- bess(data$x, data$y, s.list = 1:10, method = "sequential",
              family = "binomial", epsilon = 0)
 print(fit2)
 #coef(fit2, sparse = TRUE)
@@ -112,10 +112,10 @@ plot(fit2, type = "both", breaks = TRUE, K = 5)
 #--------------cox model--------------#
 
 # Generate simulated data
-data <- gen.data(n, p, K, rho, sigma, c = 10, family = "cox", scal = 10)
+data <- gen.data(n, p, 5, rho, sigma, c = 10, family = "cox", scal = 10)
 
 # Best subset selection
-fit3 <- bess(data$x, data$y, s.list = 1:15, method = "sequential",
+fit3 <- bess(data$x, data$y, s.list = 1:10, method = "sequential",
              family = "cox")
 print(fit3)
 #coef(fit3, sparse = TRUE)
@@ -123,7 +123,7 @@ bestmodel <- fit3$bestmodel
 #summary(bestmodel)
 
 # Plot solution path and the loss function
-plot(fit3, type = "both", breaks = TRUE, K = 10)
+plot(fit3, type = "both", breaks = TRUE, K = 5)
 
 
 #----------------------High dimensional linear models--------------------#
@@ -142,7 +142,6 @@ data("prostate")
 x = prostate[,-9]
 y = prostate[,9]
 
-fit.ungroup = bess(x, y, s.list = 1:ncol(x), method = "sequential")
 fit.group = bess(x, y, s.list = 1:ncol(x), factor = c("gleason"))
 
 
@@ -154,7 +153,6 @@ x$ldl[x$ldl<5] = 1
 x$ldl[x$ldl>=5&x$ldl<10] = 2
 x$ldl[x$ldl>=10] = 3
 
-fit.ungroup = bess(x, y, s.list = 1:ncol(x), method = "sequential", family = "binomial")
 fit.group = bess(x, y, s.list = 1:ncol(x), factor = c("ldl"), family = "binomial")
 ## End(Not run)
 }
