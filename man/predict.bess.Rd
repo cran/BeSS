@@ -5,13 +5,13 @@
   Similar to other predict methods, which returns predictions from a fitted "\code{bess}" object.
 }
 \usage{
-  \method{predict}{bess}(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBIC"),...)
+  \method{predict}{bess}(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "GIC"),...)
 }
 \arguments{
   \item{object}{Output from the \code{bess} function or the \code{bess.one} function.}
   \item{newdata}{New data used for prediction.}
-  \item{type}{Types of coefficients returned. \code{ type = "AIC"} cooresponds to the predictor with optimal AIC value; \code{ type = "BIC"} cooresponds to the predictor with optimal BIC value;
-\code{ type = "EBIC"} cooresponds to the predictor with optimal EBIC value;\code{ type = "ALL"} cooresponds to all predictors in the \code{bess} object; \code{ type = "opt"} cooresponds to predictors in best model. Default is \code{ALL}. }
+  \item{type}{Types of predictor returned. \code{ type = "AIC"} cooresponds to the predictor with optimal AIC value; \code{ type = "BIC"} cooresponds to the predictor with optimal BIC value;
+\code{ type = "GIC"} cooresponds to the predictor with optimal GIC value;\code{ type = "ALL"} cooresponds to all predictors in the \code{bess} object; \code{ type = "opt"} cooresponds to predictors in best model. Default is \code{ALL}. }
   \item{\dots}{Additional arguments affecting the predictions produced.}
 }
 \value{The object returned depends on the types of family.}

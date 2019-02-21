@@ -10,7 +10,7 @@ importFrom("graphics","abline","axis","box","grid","layout","lines","mtext","par
 importFrom("stats","glm","rbinom","rnorm","runif","model.matrix")
 
 
-export(bess, bess.one, gen.data, aic, bic, ebic)
+export(bess, bess.one, gen.data, aic, bic, gic)
 
 S3method(plot,bess)
 S3method(coef,bess)

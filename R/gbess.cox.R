@@ -1,11 +1,11 @@
-gbess.cox = function(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
-                     weights=rep(1,nrow(x)), normalize=FALSE)
+gbess.cox = function(x, y, Gi, beta0, s, cox.max = 20, max.steps = 10,
+                     weights = rep(1, nrow(x)), normalize = FALSE)
 {
-  if(missing(beta0)) beta0=rep(0,ncol(x))
-  if(is.matrix(y)!=0) y=as.matrix(y)
-  if(ncol(y)!=2) stop("Please input y with two columns!")
-  if(missing(beta0)) beta0=rep(0,ncol(x))
-  if(s>length(beta0))
+  if(missing(beta0)) beta0 = rep(0,ncol(x))
+  if(is.matrix(y) != 0) y = as.matrix(y)
+  if(ncol(y) != 2) stop("Please input y with two columns!")
+  if(missing(beta0)) beta0 = rep(0,ncol(x))
+  if(s > length(beta0))
   {stop("s is too large")}
   # initial
   n = dim(x)[1]
@@ -14,6 +14,7 @@ gbess.cox = function(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
   one = rep(1,n)
   names(beta0) = vn
   xs = x
+  ys = y
   weights = weights/mean(weights)
 
   orderGi = order(Gi)
@@ -24,10 +25,10 @@ gbess.cox = function(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
   N = length(gi)
   if(normalize)
   {
-    mark=order(y[,1],decreasing = FALSE)
-    y=y[mark,]
-    x=x[mark,]
-    weights=weights[mark]
+    mark = order(y[,1],decreasing = FALSE)
+    y = y[mark,]
+    x = x[mark,]
+    weights = weights[mark]
 
     one = rep(1, n)
     #center
@@ -52,35 +53,34 @@ gbess.cox = function(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
     B = setA$B+1
     beta = rep(0,p)
     gr_size = setA$gr_size
-    cox=coxph(Surv(y[,1],y[,2])~x[,B],weights=weights,eps=1e-8,iter.max=cox.max)
-    beta[B]=cox$coefficients
-    if(setequal(A,A0)==TRUE){
+    cox = coxph(Surv(y[,1],y[,2])~x[,B], weights = weights, eps = 1e-8, iter.max = cox.max)
+    beta[B] = cox$coefficients
+    if(setequal(A,A0) == TRUE){
       break;
     }
     A0 <- A
   }
   if(normalize)
   {
-    beta=sqrt(n)*beta/normx
+    beta = sqrt(n)*beta/normx
   }
   beta[orderGi] = beta
   names(beta) = vn
   A = orderGi[A]
   B = orderGi[B]
-  s=length(B)
+  s = length(B)
 
-  xbest=xs[,which(beta!=0)]
-  bestmodel=coxph(Surv(y[,1],y[,2])~xbest, weights=weights, iter.max=cox.max)
-  dev=-2*cox$loglik[2]
-  nulldev=-2*cox$loglik[1]
-  aic=dev+2*s
-  bic=dev+log(n)*s
-  ebic=dev+(log(n)+2*log(p))*s
+  xbest = xs[, which(beta != 0)]
+  bestmodel = coxph(Surv(ys[,1],ys[,2])~xbest, weights = weights, iter.max = cox.max)
+  dev = -2*cox$loglik[2]
+  nulldev = -2*cox$loglik[1]
+  aic = dev+2*length(B)
+  bic = dev+log(n)*length(B)
+  gic = dev+log(p)*log(log(n))*length(B)
 
-  return(list(family="bess_cox",beta=beta,nsample=n,bestmodel=bestmodel,
-              deviance=dev,nulldeviance=nulldev,
-              lambda=setA$max_T^2/2,AIC=aic,BIC=bic,EBIC=ebic,max.steps=max.steps,
-              gr_size=gr_size))
+  return(list(family = "bess_cox", beta = beta, nsample = n, bestmodel = bestmodel,
+              deviance = dev, nulldeviance = nulldev, AIC = aic, BIC = bic, GIC = gic,
+              max.steps = max.steps, gr_size = gr_size))
 }
 
 

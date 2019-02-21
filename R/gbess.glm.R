@@ -1,9 +1,9 @@
-gbess.glm = function(x, y, Gi, beta0, intercept=0, s, max.steps = 10, glm.max=1e6,
-                     weights=rep(1,nrow(x)), normalize=FALSE)
+gbess.glm = function(x, y, Gi, beta0, intercept = 0, s, max.steps = 10, glm.max = 1e6,
+                     weights = rep(1, nrow(x)), normalize = FALSE)
 {
   if(length(unique(y))!=2)  stop("Please input binary variable!")
 
-  if(missing(beta0)) beta0=rep(0,ncol(x))
+  if(missing(beta0)) beta0 = rep(0,ncol(x))
   if(s>length(beta0))
   {stop("s is too large")}
   # initial
@@ -45,46 +45,45 @@ gbess.glm = function(x, y, Gi, beta0, intercept=0, s, max.steps = 10, glm.max=1e
     B = setA$B+1
     beta = rep(0,p)
     gr_size = setA$gr_size
-    if(length(B)>=2)
+    if(length(B) >= 2)
     {
-      logit=glmnet(x[,B],y,family="binomial",lambda = 0,maxit=glm.max, weights = weights)
-      beta[B]=logit$beta
-      coef0=logit$a0
+      logit = glmnet(x[,B], y, family = "binomial", lambda = 0, maxit = glm.max, weights = weights)
+      beta[B] = logit$beta
+      coef0 = logit$a0
     }else{
-      logit=glm(y~x[,B],family="binomial", weights = weights)
-      beta[B]=logit$coefficients[-1]
-      coef0=logit$coefficients[1]
+      logit = glm(y~x[,B], family = "binomial", weights = weights)
+      beta[B] = logit$coefficients[-1]
+      coef0 = logit$coefficients[1]
     }
-    if(setequal(A,A0)==TRUE){
-      break;
+    if(setequal(A,A0) == TRUE){
+      break
     }
-    A0 <- A
+    A0 = A
   }
   if(normalize)
   {
-    beta=sqrt(n)*beta/normx
-    coef0=coef0-sum(beta*meanx)
+    beta = sqrt(n)*beta/normx
+    coef0 = coef0-sum(beta*meanx)
   }
   beta[orderGi] = beta
   names(beta) = vn
   A = orderGi[A]
   B = orderGi[B]
-  s=length(B)
+  s = length(B)
   eta = x%*%beta
   pr = exp(eta)/(1+exp(eta))
 
-  xbest=xs[,which(beta!=0)]
-  bestmodel=glm(y~xbest, family="binomial", weights = weights)
-  dev=-2*sum((weights*((y*log(pr) + (1-y)*log(1-pr))))[which(pr>1e-20&pr<1-1e-20)])
-  nulldev=-2*sum(weights*(y*log(0.5) + (1-y)*log(0.5)))
-  aic=dev+2*s
-  bic=dev+log(n)*s
-  ebic=dev+(log(n)+2*log(p))*s
+  xbest = xs[, which(beta != 0)]
+  bestmodel = glm(y~xbest, family = "binomial", weights = weights)
+  dev = -2*sum((weights*((y*log(pr) + (1-y)*log(1-pr))))[which(pr>1e-20&pr<1-1e-20)])
+  nulldev = -2*sum(weights*(y*log(0.5) + (1-y)*log(0.5)))
+  aic = dev+2*length(B)
+  bic = dev+log(n)*length(B)
+  gic = dev+log(p)*log(log(n))*length(B)
 
-  return(list(family="bess_binomial",beta=beta,coef0=coef0,nsample=n,bestmodel=bestmodel,
-              deviance=dev,nulldeviance=nulldev,
-              lambda=setA$max_T^2/2,p=p,AIC=aic,BIC=bic,EBIC=ebic,max.steps=max.steps,
-              gr_size=gr_size))
+  return(list(family = "bess_binomial", beta = beta, coef0 = coef0, nsample = n, bestmodel = bestmodel,
+              deviance = dev, nulldeviance = nulldev, AIC = aic, BIC = bic, GIC = gic,
+              max.steps = max.steps, gr_size = gr_size))
 }
 
 

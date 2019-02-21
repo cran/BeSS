@@ -1,16 +1,16 @@
-aic=function(object,...){
-  AIC=object$AIC
+aic = function(object,...){
+  AIC = object$AIC
   return(AIC)
 }
 
-bic=function(object,...){
-  BIC=object$BIC
+bic = function(object,...){
+  BIC = object$BIC
   return(BIC)
 }
 
-ebic=function(object,...){
-  EBIC=object$BIC
-  return(EBIC)
+gic = function(object,...){
+  GIC = object$GIC
+  return(GIC)
 }
 
 

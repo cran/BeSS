@@ -10,12 +10,16 @@ bess(x, y, family = c("gaussian", "binomial", "cox"),
      s.max,
      s.list,
      K.max = 20,
-     max.steps = 15,
-     glm.max = 1e6,
+     max.steps = 20,
+     glm.max = 20,
      cox.max = 20,
-	 factor = NULL,
+     eta = 0.2,
+     factor = NULL,
      epsilon = 1e-4,
-	 weights=rep(1,nrow(x)))
+     weights = rep(1,nrow(x)),
+     ic.type = c("GIC", "AIC", "BIC"),
+     warm.start = TRUE,
+     normalize = TRUE)
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -29,12 +33,17 @@ bess(x, y, family = c("gaussian", "binomial", "cox"),
 
   \item{K.max}{The maximum iterations used for method = "\code{gsection}"}
     \item{max.steps}{The maximum number of iterations in \code{bess} function. In linear regression, only a few steps can gurantee the convergence. Default is 15.}
-  \item{glm.max}{The maximum number of iterations for solving the maximum likelihood problem on the active set at each step in the primal dual active set algorithm.Only used in the logistic regression for family="binomial". Default is 1e6.}
+  \item{glm.max}{The maximum number of iterations for solving the maximum likelihood problem on the active set at each step in the primal dual active set algorithm.Only used in the logistic regression for family="binomial". Default is 20.}
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set at each step in the primal dual active set algorithm. Only used in Cox's model for family="cox". Default is 20.}
+  \item{eta}{The step size of Newton Raphson\eqn{-}algorithm in Cox model. Default is 0.2. }
   \item{factor}{Which variable to be factored. Should be NULL or a numeric vector.}
   \item{epsilon}{The tolerance for an early stoping rule in the method "sequential". The early stopping rule is defined as \eqn{\|Y-X\beta\|/n \leq \epsilon}.}
   \item{weights}{Observation weights. Default is 1 for each observation}
-
+  \item{ic.type}{Types of best model returned. \code{ type = "AIC"} cooresponds to the best model with optimal AIC value; \code{ type = "BIC"} cooresponds to the best model with optimal BIC value;
+\code{ type = "GIC"} cooresponds to the best model with optimal GIC value;
+Default is \code{GIC}. }
+  \item{warm.start}{Logical flag for using warm-start. It will sometimes be more efficient. Default is warm.start=TRUE.}
+  \item{normalize}{Logical flag for x variable normalization, prior to fitting the model sequence.The coefficients are always returned on the original scale. Default is normalize=TRUE.}
 }
 \details{
   The best subset selection problem with model size \eqn{s} is
@@ -48,13 +57,12 @@ bess(x, y, family = c("gaussian", "binomial", "cox"),
 A list with class attribute 'bess' and named components:
   \item{family}{Types of the model: "\code{bess_gaussian}" for linear model,"\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model.}
   \item{beta}{The best fitting coefficients of size \eqn{s=0,1,\dots,p} with the smallest loss function.}
-  \item{lambda}{The lambda value in the Lagrangian form of the best subset selection problem with model size of \eqn{s}.}
   \item{bestmodel}{The best fitted model, the class of which is "lm", "glm" or "coxph"}
   \item{deviance}{The value of \eqn{-2\times logL}.}
   \item{nulldeviance}{The value of \eqn{-2\times logL} for null model.}
   \item{AIC}{The value of \eqn{-2\times logL + 2 \|\beta\|_0}.}
   \item{BIC}{The value of \eqn{-2\times logL+ log(n) \|\beta\|_0}.}
-  \item{EBIC}{The value of \eqn{-2\times logL+ (log(n)+2\times log(p)) \|\beta\|_0}.}
+  \item{GIC}{The value of \eqn{-2\times logL+ log(p)log(log(n)) \|\beta\|_0}.}
   \item{factor}{Which variable to be factored. Should be NULL or a numeric vector.}
 }
 

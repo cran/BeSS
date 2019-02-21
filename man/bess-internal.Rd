@@ -3,10 +3,18 @@
 \alias{plot_solution}
 \alias{plot_loss}
 \alias{bess_lm}
+\alias{bess_lms}
+\alias{bess_lm_gs}
 \alias{gbess_lm}
-\alias{get_A}
-\alias{getcox_A}
+\alias{gbess_lms}
+\alias{bess_glm}
+\alias{bess_glms}
+\alias{bess_glm_gs}
 \alias{gget_A}
+\alias{bess_cox}
+\alias{bess_coxs}
+\alias{bess_cox_gs}
+\alias{ggetcox_A}
 \alias{bess.lm}
 \alias{bess.glm}
 \alias{bess.cox}
@@ -14,22 +22,23 @@
 \alias{gbess.glm}
 \alias{gbess.cox}
 \alias{EigenR}
-\alias{uniqueR}
+\alias{Normalize2}
 \description{Internal BeSS functions}
 \usage{
-bess.lm(x, y, beta0, s, max.steps=20, factor = NULL,
-        weights=rep(1,nrow(x)), normalize=FALSE)
-bess.glm(x, y, beta0, intercept=0, s, max.steps=20,
-         glm.max=1e6, factor = NULL,
-         weights=rep(1,nrow(x)), normalize=FALSE)
-bess.cox(x, y, beta0, s, cox.max=20, max.steps=20, factor=NULL,
-         weights=rep(1,nrow(x)), normalize=FALSE)
+bess.lm(x, y, beta0, s, max.steps = 20, factor = NULL,
+        weights = rep(1, nrow(x)), normalize = FALSE)
+bess.glm(x, y, beta0, intercept = 0, s, max.steps = 20,
+         glm.max = 20, factor = NULL,
+         weights = rep(1, nrow(x)), normalize = FALSE)
+bess.cox(x, y, beta0, s, max.steps = 20,
+         cox.max = 20, eta = 0.2, factor = NULL,
+         weights = rep(1, nrow(x)), normalize = FALSE)
 gbess.lm(x, y, Gi, beta0, s, max.steps = 20,
-         weights=rep(1,nrow(x)), normalize=FALSE)
-gbess.glm(x, y, Gi, beta0, intercept=0, s, max.steps = 10, glm.max=1e6,
-          weights=rep(1,nrow(x)), normalize=FALSE)	
-gbess.cox(x, y, Gi, beta0, s, cox.max=20, max.steps=10,
-          weights=rep(1,nrow(x)), normalize=FALSE)		  
+         weights = rep(1, nrow(x)), normalize = FALSE)
+gbess.glm(x, y, Gi, beta0, intercept = 0, s, max.steps = 10, glm.max = 1e6,
+          weights = rep(1, nrow(x)), normalize = FALSE)
+gbess.cox(x, y, Gi, beta0, s, cox.max = 20, max.steps = 10,
+          weights = rep(1, nrow(x)), normalize = FALSE)
 }
 \author{
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.

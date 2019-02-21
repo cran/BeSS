@@ -1,13 +1,13 @@
-predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBIC"),...)
+predict.bess = function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "GIC"),...)
 {
-  type <- match.arg(type)
+  type = match.arg(type)
   method = object$method
-  if(method == "gsection"&(type%in%c("AIC","BIC","EBIC"))) stop("method gsection shouldn't match type AIC, BIC or EBIC!")
-  if(method == "sequential"&type=="opt") stop("method sequential shouldn't match type opt!")
+  if(method == "gsection"&(type%in%c("AIC","BIC","GIC"))) stop("method gsection shouldn't match type AIC, BIC or GIC!")
+  if(method == "sequential"&type == "opt") stop("method sequential shouldn't match type opt!")
   if(!is.null(object$factor)){
     factor = c(object$factor)
     if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
-    newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
+    newdata[,factor] = apply(newdata[,factor,drop = FALSE], 2, function(x){
       return(as.factor(x))
     })
     newdata = model.matrix(~., data = newdata)[,-1]
@@ -55,7 +55,7 @@ predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBI
     }
     return(class[which.min(object[[type]]),,drop = TRUE])
   }
-  if(object$family=="bess_cox")
+  if(object$family == "bess_cox")
   {
     betas = object$beta
 
@@ -66,19 +66,19 @@ predict.bess=function(object, newdata, type = c("ALL", "opt", "AIC", "BIC", "EBI
     if(type == "opt"){
       return(t(betax)[ncol(betax),,drop = TRUE])
     }
-    return(betax[,which.min(object[[type]]),drop = TRUE])
+    return(betax[, which.min(object[[type]]), drop = TRUE])
   }
 
 }
 
 
 
-predict.bess.one=function(object,newdata, ...)
+predict.bess.one = function(object, newdata, ...)
 {
   if(!is.null(object$factor)){
     factor = c(object$factor)
     if(!is.data.frame(newdata)) newdata = as.data.frame(newdata)
-    newdata[,factor] = apply(newdata[,factor,drop=FALSE], 2, function(x){
+    newdata[,factor] = apply(newdata[,factor,drop = FALSE], 2, function(x){
       return(as.factor(x))
     })
     newdata = model.matrix(~., data = newdata)[,-1]
@@ -90,7 +90,7 @@ predict.bess.one=function(object,newdata, ...)
     if(any(is.na(match(vn, colnames(newdata))))) stop("names of newdata don't match training data!")
     newx = as.matrix(newdata[,vn])
   }
-  if(object$family=="bess_gaussian")
+  if(object$family == "bess_gaussian")
   {
     betas = object$beta
     coef0 = object$coef0
@@ -107,8 +107,8 @@ predict.bess.one=function(object,newdata, ...)
     class[is.na(class)] = 1
     if(!is.null(object$y_names))
     {
-      class[which(class == 0,arr.ind = T)] = object$y_names[1]
-      class[which(class == 1,arr.ind = T)] = object$y_names[2]
+      class[which(class == 0, arr.ind = T)] = object$y_names[1]
+      class[which(class == 1, arr.ind = T)] = object$y_names[2]
     }
 
     return(class)
