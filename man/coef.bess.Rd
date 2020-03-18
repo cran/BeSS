@@ -1,16 +1,18 @@
 \name{coef.bess}
 \alias{coef.bess}
+\alias{coef.bess.one}
 \title{Provides estimated coefficients from a fitted "bess" object.}
 \description{
-  Similar to other prediction methods, this function provides estimated coefficients from a fitted "\code{bess}" object.
+  Similar to other prediction methods, this function provides estimated coefficients from a fitted "\code{bess}" object or a fitted "\code{bess.one}" object.
 }
 \usage{
-    \method{coef}{bess}(object, sparse=TRUE, type = c("ALL", "AIC", "BIC", "GIC"),...)
+    \method{coef}{bess}(object, sparse=TRUE, type = c("ALL", "AIC", "BIC", "EBIC"),...)
+    \method{coef}{bess.one}(object, sparse = TRUE , ...)
 }
 \arguments{
   \item{object}{A "\code{bess}" project or a "\code{bess.one}" project.}
   \item{sparse}{Logical or NULL, specifying whether the coefficients should be presented as sparse matrix or not.}
-  \item{type}{Types of coefficients returned. \code{ type = "AIC"} cooresponds to the coefficient with optimal AIC value; \code{ type = "BIC"} cooresponds to the coefficient with optimal BIC value; \code{ type = "GIC"} cooresponds to the coefficient with optimal GIC value; \code{ type = "ALL"} cooresponds to all coefficients in the \code{bess} object. Default is \code{ALL}. }
+  \item{type}{Types of coefficients returned. \code{ type = "AIC"} cooresponds to the coefficient with optimal AIC value; \code{ type = "BIC"} cooresponds to the coefficient with optimal BIC value; \code{ type = "EBIC"} cooresponds to the coefficient with optimal EBIC value; \code{ type = "ALL"} cooresponds to all coefficients in the \code{bess} object. Default is \code{ALL}. }
   \item{\dots}{Other arguments.}
 }
 
@@ -19,7 +21,7 @@
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
+ Wen, C., Zhang, A., Quan, S., and Wang, X. (2017) BeSS: A R package for best subset selection in GLM and CoxPH Models, Technical reports.
 }
 
 \seealso{

@@ -1,11 +1,13 @@
 \name{deviance.bess}
 \alias{deviance.bess}
+\alias{deviance.bess.one}
 \title{Extract the deviance from a "bess" object.}
 \description{
-  Similar to other deviance methods, which returns deviance from a fitted "\code{bess}" object.
+  Similar to other deviance methods, which returns deviance from a fitted "\code{bess}" object or a fitted "\code{bess.one}" object.
 }
 \usage{
   \method{deviance}{bess}(object,...)
+  \method{deviance}{bess.one}(object,...)
 }
 \arguments{
   \item{object}{Output from the \code{bess} function or the \code{bess.one} function.}
@@ -17,7 +19,7 @@
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
+ Wen, C., Zhang, A., Quan, S., and Wang, X. (2017) BeSS: A R package for best subset selection in GLM and CoxPH Models, Technical reports.
 }
 
 

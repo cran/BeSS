@@ -5,17 +5,8 @@
   Best subset selection with a specified model size for generalized linear models and Cox's proportional hazard model.
 }
 \usage{
-bess.one(x, y, family = c("gaussian", "binomial", "cox"),
-         s = 1,
-         max.steps = 20,
-         glm.max = 20,
-         cox.max = 20,
-         eta = 0.2,
-         factor = NULL,
-         beta0 = rep(0,ncol(x)),
-         intercept = 0,
-         weights = rep(1,nrow(x)),
-         normalize = TRUE)
+bess.one(x, y, family = c("gaussian", "binomial", "cox"), s = 1, max.steps = 15,
+         glm.max = 1e+6, cox.max = 20, normalize = TRUE)
 }
 \arguments{
   \item{x}{Input matrix,of dimension n x p; each row is an observation vector.}
@@ -25,21 +16,16 @@ bess.one(x, y, family = c("gaussian", "binomial", "cox"),
   \item{max.steps}{The maximum number of iterations in the primal dual active set algorithm. In most cases, only a few steps can gurantee the convergence. Default is 15.}
   \item{glm.max}{The maximum number of iterations for solving the maximum likelihood problem on the active set. It occurs at each step in the primal dual active set algorithm. Only used in the logistic regression for family = "\code{binomial}". Default is \eqn{1e+6}.}
   \item{cox.max}{The maximum number of iterations for solving the maximum partial likelihood problem on the active set. It occurs at each step in the primal dual active set algorithm. Only used in Cox model for family  = "\code{cox}". Default is 20.}
-  \item{eta}{The step size of Newton Raphson\eqn{-}algorithm in Cox model. Default is 0.2. }
-  \item{factor}{Which variable to be factored. Should be NULL or a numeric vector. }
-  \item{beta0}{Initial coefficients before fitting the model. Default is 0 for each variable. }
-  \item{intercept}{Initial intercept before fitting the model. Default is 0. }
-  \item{weights}{Observation weights. Default is 1 for each observation}
-  \item{normalize}{Logical flag for x variable normalization, prior to fitting the model sequence.The coefficients are always returned on the original scale. Default is normalize=TRUE.}
+  \item{normalize}{Whether to normalize \code{x} or not. Default is TRUE.}
 }
 \value{
 A list with class attribute '\code{bess.one}' and named components:
   \item{type}{Types of the model: "\code{bess_gaussian}" for linear model, "\code{bess_binomial}" for logistic model and "\code{bess_cox}" for Cox model}
   \item{beta}{The best fitting coefficients with the smallest loss function given the model size \code{s}.}
+  \item{lambda}{The estimated lambda value in the Lagrangian form of the best subset selection problem with model size \code{s}.}
   \item{bestmodel}{The best fitted model, the class of which is "lm", "glm" or "coxph"}
   \item{deviance}{The value of \eqn{-2*logL(\beta)}.}
   \item{nulldeviance}{The value of \eqn{-2*logL(\beta)} for null model.}
-  \item{factor}{Which variable to be factored. Should be NULL or a numeric vector.}
 }
 
 \details{
@@ -54,7 +40,7 @@ A list with class attribute '\code{bess.one}' and named components:
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
+ Wen, C., Zhang, A., Quan, S., and Wang, X. (2017) BeSS: A R package for best subset selection in GLM and CoxPH Models, Technical reports.
 }
 
 
@@ -79,11 +65,10 @@ data <- gen.data(n, p, family = "gaussian", K, rho, sigma)
 
 # Best subset selection
 fit1 <- bess.one(data$x, data$y, s = 10, family = "gaussian", normalize = TRUE)
-#coef(fit1,sparse=TRUE)
+coef(fit1,sparse=TRUE)
 bestmodel <- fit1$bestmodel
-#summary(bestmodel)
+summary(bestmodel)
 
-## Not run:
 #--------------logistic model--------------#
 
 # Generate simulated data
@@ -91,8 +76,8 @@ data <- gen.data(n, p, family = "binomial", K, rho, sigma)
 
 # Best subset selection
 fit2 <- bess.one(data$x, data$y, family = "binomial", s = 10, normalize = TRUE)
-bestmodel <- fit2$bestmodel
-#summary(bestmodel)
+bestmodel <- fit2$model
+summary(bestmodel)
 
 #--------------cox model--------------#
 
@@ -101,8 +86,8 @@ data <- gen.data(n, p, K, rho, sigma, c=10, family="cox", scal=10)
 
 # Best subset selection
 fit3 <- bess.one(data$x, data$y, s = 10, family = "cox", normalize = TRUE)
-bestmodel <- fit3$bestmodel
-#summary(bestmodel)
+bestmodel <- fit3$model
+summary(bestmodel)
 
 #----------------------High dimensional linear models--------------------#
 
@@ -112,23 +97,4 @@ data <- gen.data(n, p, family = "gaussian", K, rho, sigma)
 # Best subset selection
 fit <- bess.one(data$x, data$y, s=10, family = "gaussian", normalize = TRUE)
 
-#---------------prostate---------------#
-data("prostate")
-x = prostate[,-9]
-y = prostate[,9]
-
-fit.ungroup = bess.one(x, y, s=5)
-fit.group = bess.one(x, y, s=5, factor = c("gleason"))
-
-#---------------SAheart---------------#
-data(SAheart)
-y = SAheart[,5]
-x = SAheart[,-5]
-x$ldl[x$ldl<5] = 1
-x$ldl[x$ldl>=5&x$ldl<10] = 2
-x$ldl[x$ldl>=10] = 3
-
-fit.ungroup = bess.one(x, y, s=5, family = "binomial")
-fit.group = bess.one(x, y, s=5, factor = c("ldl"), family = "binomial")
-## End(Not run)
 }
