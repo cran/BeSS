@@ -13,11 +13,7 @@ A list containing the design matrix X and response matrix y
 \source{\url{https://github.com/ramhiser}}
 
 \references{
- \itemize{
-   \item Eleonore Gravier, Gaelle Pierron, and Anne Vincent-Salomon.(2010). \emph{A prognostic DNA signature for T1T2 node-negative breast cancer patients}
+   Eleonore Gravier., Gaelle Pierron., and Anne Vincent-Salomon. (2010). A prognostic DNA signature for T1T2 node-negative breast cancer patients.
 }
 
 
-
-
-}

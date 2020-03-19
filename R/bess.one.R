@@ -1,15 +1,20 @@
 bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
-                  s = 1,
-                  max.steps = 15,
-                  glm.max = 1e6,
-                  cox.max = 20,
-                  normalize = TRUE)
+                    s = 1,
+                    max.steps = 15,
+                    glm.max = 1e6,
+                    cox.max = 20,
+                    factor = NULL,
+                    weights = rep(1,nrow(x)),
+                    normalize = TRUE)
 {
   family <- match.arg(family)
   if(ncol(x)==1|is.vector(x)) stop("x should be two columns at least!")
   if(missing(family)) stop("Please input family!")
   if(family=="binomial")
   {
+    if(is.factor(y)){
+      y = as.character(y)
+    }
     if(length(unique(y))!=2)  stop("Please input binary variable!")else
       if(setequal(y_names<-unique(y),c(0,1))==FALSE)
       {
@@ -34,13 +39,11 @@ bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
   if(s>length(beta0))
   {stop("s is too large")}
 
-  x=as.matrix(x)
-  vn=colnames(x)
 
   if(family=="gaussian")
   {
-    out=bess.lm(x=x,y=y,beta0=beta0,s=s,max.steps=max.steps,normalize=normalize)
-    names(out[[2]])=vn
+    out=bess.lm(x=x,y=y,beta0=beta0,s=s,max.steps=max.steps,factor=factor,
+                weights=weights,normalize=normalize)
     class(out)="bess.one"
     return(out)
   }
@@ -50,11 +53,12 @@ bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
           intercept=0,s=s,
           max.steps=max.steps,
           glm.max=glm.max,
+          factor=factor,
+          weights=weights,
           normalize=normalize)
     if(!setequal(y_names,c(0,1)))
     {
-     fit[[10]] = y_names
-     names(fit[[10]])=y_names
+     fit$y_names = y_names
      class(fit)="bess.one"
      return(fit)
     }else
@@ -69,8 +73,9 @@ bess.one = function(x, y, family = c("gaussian", "binomial", "cox"),
                   s=s,
                   cox.max=cox.max,
                   max.steps=max.steps,
+                  factor=factor,
+                  weights=weights,
                   normalize=normalize)
-
      class(out)="bess.one"
      return(out)
     }

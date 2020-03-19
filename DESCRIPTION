@@ -1,9 +1,8 @@
 Package: BeSS
 Type: Package
-Title: Best Subset Selection for Sparse Generalized Linear Model and
-        Cox Model
-Version: 1.0.7
-Date: 2020-03-18
+Title: Best Subset Selection in Linear, Logistic and CoxPH Models
+Version: 1.0.8
+Date: 2020-03-19
 Authors@R: c(
   person(given = "Canhong", family = "Wen", email = "wencanhong@gmail.com", role = c("aut", "cre")),
   person(given = "Aijun", family = "Zhang", email = "ajzhang@hku.hk", role = c("aut")),
@@ -16,10 +15,10 @@ Author: Canhong Wen [aut, cre],
 Maintainer: Canhong Wen <wencanhong@gmail.com>
 Description: An implementation of best subset selection in generalized linear model and Cox proportional hazard model via the primal dual active set algorithm proposed by Wen, C., Zhang, A., Quan, S. and Wang, X. (2017) <arXiv:1709.06254>. The algorithm formulates coefficient parameters and residuals as primal and dual variables and utilizes efficient active set selection strategies based on the complementarity of the primal and dual variables.
 License: GPL-3
-Depends: R (>= 2.10)
-Imports: Rcpp, Matrix, glmnet, survival
+Depends: R (>= 3.0.0)
+Imports: Rcpp(>= 0.12.6), Matrix(>= 1.2-6), glmnet, survival
 LinkingTo: Rcpp, RcppEigen
 NeedsCompilation: yes
-Packaged: 2020-03-18 16:17:58 UTC; Mamba
+Packaged: 2020-03-19 01:48:49 UTC; Mamba
 Repository: CRAN
-Date/Publication: 2020-03-18 17:00:03 UTC
+Date/Publication: 2020-03-19 12:10:25 UTC

@@ -5,7 +5,7 @@ gen.data=function(n, p, family, K, rho = 0, sigma = 1, beta = NULL,
   zero=rep(0,n)
   X=rnorm(n*p)
   X=matrix(X,n,p)
-  X = scale(X, T, FALSE)
+  X = scale(X, TRUE, FALSE)
   normX = sqrt(drop(one %*% (X^2)))
   X = sqrt(n)*scale(X, FALSE, normX)
   gc()

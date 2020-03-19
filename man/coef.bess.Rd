@@ -1,13 +1,11 @@
 \name{coef.bess}
 \alias{coef.bess}
-\alias{coef.bess.one}
 \title{Provides estimated coefficients from a fitted "bess" object.}
 \description{
-  Similar to other prediction methods, this function provides estimated coefficients from a fitted "\code{bess}" object or a fitted "\code{bess.one}" object.
+  Similar to other prediction methods, this function provides estimated coefficients from a fitted "\code{bess}" object.
 }
 \usage{
     \method{coef}{bess}(object, sparse=TRUE, type = c("ALL", "AIC", "BIC", "EBIC"),...)
-    \method{coef}{bess.one}(object, sparse = TRUE , ...)
 }
 \arguments{
   \item{object}{A "\code{bess}" project or a "\code{bess.one}" project.}
@@ -21,7 +19,7 @@
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S., and Wang, X. (2017) BeSS: A R package for best subset selection in GLM and CoxPH Models, Technical reports.
+ Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
 }
 
 \seealso{
