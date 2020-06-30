@@ -49,7 +49,7 @@ A list with class attribute '\code{bess.one}' and named components:
   Canhong Wen, Aijun Zhang, Shijie Quan, and Xueqin Wang.
 }
 \references{
- Wen, C., Zhang, A., Quan, S. and Wang, X. (2017). BeSS: an R package for best subset selection in linear, logistic and CoxPH models. arXiv: 1709.06254.
+ Wen, C., Zhang, A., Quan, S. and Wang, X. (2020). BeSS: An R Package for Best Subset Selection in Linear, Logistic and Cox Proportional Hazards Models, \emph{Journal of Statistical Software}, Vol. 94(4).  doi:10.18637/jss.v094.i04.
 }
 
 
