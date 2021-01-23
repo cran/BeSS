@@ -4,13 +4,17 @@
 #ifndef SRC_ALGORITHM_H
 #define SRC_ALGORITHM_H
 
+#ifndef R_BUILD
+#include <unsupported/Eigen/MatrixFunctions>
+#endif
+
 #include "Data.h"
 #include "utilities.h"
 #include "logistic.h"
 #include "poisson.h"
 #include "coxph.h"
 #include <iostream>
-#include <unsupported/Eigen/MatrixFunctions>
+
 #include <time.h>
 #include <cfloat>
 
@@ -676,8 +680,8 @@ public:
     vector<int> A(T0);
     Eigen::VectorXd coef = Eigen::VectorXd::Ones(n) * coef0;
 
-    Eigen::VectorXd d = (X.adjoint() * (y - X * beta - coef) / double(n) - 2 * this->lambda_level * beta) / sqrt(1 + 2 * this->lambda_level);
-    Eigen::VectorXd bd = sqrt(1 + 2 * this->lambda_level) * beta + d;
+    Eigen::VectorXd d = (X.adjoint() * (y - X * beta - coef) / double(n) - 2 * this->lambda_level * beta) / sqrt(1.0 + 2.0 * this->lambda_level);
+    Eigen::VectorXd bd = sqrt(1.0 + 2.0 * this->lambda_level) * beta + d;
     bd = bd.cwiseAbs2();
 
     // keep always_select in active_set

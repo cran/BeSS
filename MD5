@@ -1,4 +1,4 @@
-b3c208d7496923b8778f7e36e0b9621d *DESCRIPTION
+52438f53151fe62383f70bc7d0d43250 *DESCRIPTION
 7e2ea5866acd65bbb917e1d90fbab700 *NAMESPACE
 dc11bb0d65b9db7fe42dc698de62b4d4 *NEWS.md
 ed1a64ba86ad7a5a5031c38ac3164389 *R/RcppExports.R
@@ -39,7 +39,7 @@ a4c2de6879e3d187a194e076e4d968fc *man/print.bess.Rd
 f7a6341aa0841349bf82475c9b246b66 *man/summary.bess.Rd
 5ac71c663b07ec144321e6be1c439c42 *man/trim32.Rd
 b23bdcdcf423466ab260d71f366768b2 *src/Algorithm.cpp
-c64792e36bd7a3b7cfa2e908ac8a90a0 *src/Algorithm.h
+0e76f66efcb86832c49e25bd5a938b5d *src/Algorithm.h
 5e5eb2ed7ca27c6e068aae7f7dfb4d35 *src/Data.cpp
 dbee565cd69af67ef8b549c204ff201f *src/Data.h
 1035ac92cab6150e1915b0eceaa3dc8b *src/Makevars
@@ -57,7 +57,7 @@ e25d20216293e41a668f377f63920658 *src/logistic.cpp
 ee6c1ecf9f242e3a5eb8f822b916cdbb *src/normalize.h
 645358f77687b53c3d8fd9773b70ac2b *src/path.cpp
 a269a531689ef07a9a105ca00ea1f7ef *src/path.h
-425dec12302b7514cfd19bd6bbc159e0 *src/poisson.cpp
+c4ea1581eb9669c5485e5a3cd2f185af *src/poisson.cpp
 f0f93383aca803ea22d818223683ed4a *src/poisson.h
 30bb598d39871e6b8b4c1eff181c477b *src/screening.cpp
 6be78bc391412e48af12c7acf0a29be1 *src/screening.h
