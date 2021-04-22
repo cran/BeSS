@@ -1,14 +1,14 @@
-\name{summary.bess}
-\alias{summary.bess}
-\title{summary method for a "bess" object}
+\name{print.bess.one}
+\alias{print.bess.one}
+\title{print method for a "bess.one" object}
 \description{
-  Print a summary of the "\code{bess}" object.
+  Print the primary elements of the "\code{bess.one}" object.
 }
 \usage{
-  \method{summary}{bess}(object, ...)
+  \method{print}{bess.one}(x, ...)
 }
 \arguments{
-  \item{object}{a "\code{bess}" object}
+  \item{x}{a "\code{bess.one}" object}
   \item{\dots}{additional print arguments}
 }
 
@@ -25,7 +25,7 @@
 
 \examples{
 data <- gen.data(500, 20, family = "gaussian", 10, 0.2, 1)
-fit <- bess(data$x, data$y, family = "gaussian")
-summary(fit)
+fit <- bess.one(data$x, data$y, s = 10, family = "gaussian")
+print(fit)
 
 }

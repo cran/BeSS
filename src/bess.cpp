@@ -1,282 +1,201 @@
-// #define R_BUILD
-#ifdef R_BUILD
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::interfaces(r,cpp)]]
 #include <Rcpp.h>
 #include <RcppEigen.h>
-//[[Rcpp::depends(RcppEigen)]]
+#include <algorithm>
+#include <vector>
 using namespace Rcpp;
 using namespace std;
-#else
-
-#include <Eigen/Eigen>
-#include "List.h"
-
-#endif
-
-#include <iostream>
-#include "Data.h"
-#include "Algorithm.h"
-#include "Metric.h"
-#include "path.h"
-#include "utilities.h"
-//#include "bess.h"
-#include "screening.h"
-#include <vector>
-
-#ifdef OTHER_ALGORITHM1
-#include "SpliceAlgorithm.h"
-#endif
-
-#ifdef OTHER_ALGORITHM2
-#include "PrincipalBallAlgorithm.h"
-#endif
-
-using namespace Eigen;
-using namespace std;
-
 // [[Rcpp::export]]
-List bessCpp(Eigen::MatrixXd x, Eigen::VectorXd y, int data_type, Eigen::VectorXd weight,
-             bool is_normal,
-             int algorithm_type, int model_type, int max_iter, int exchange_num,
-             int path_type, bool is_warm_start,
-             int ic_type, bool is_cv, int K,
-             Eigen::VectorXd state,
-             Eigen::VectorXi sequence,
-             Eigen::VectorXd lambda_seq,
-             int s_min, int s_max, int K_max, double epsilon,
-             double lambda_min, double lambda_max, int nlambda,
-             bool is_screening, int screening_size, int powell_path,
-             Eigen::VectorXi g_index,
-             Eigen::VectorXi always_select,
-             double tao)
-{
-#ifndef R_BUILD
-    srand(123);
-#endif
-    int p = x.cols();
-    Eigen::VectorXi screening_A;
-    if (is_screening)
-    {
-        screening_A = screening(x, y, weight, model_type, screening_size, g_index, always_select);
+List bess_lm(Eigen::MatrixXd X, Eigen::VectorXd y, int T0, int max_steps, Eigen::VectorXd beta0) {
+  int n=X.rows();
+  int p=X.cols();
+  double max_T=0.0;
+  vector<int>E(p);
+  for(int k=0;k<=p-1;k++) {
+    E[k]=k;
+  }
+  vector<int>I(p-T0);
+  vector<int>A(T0);
+  vector<int>J(p-T0);
+  vector<int>B(T0);
+  Eigen::MatrixXd X_A = Eigen::MatrixXd::Zero(n, T0);
+  Eigen::MatrixXd X_I = Eigen::MatrixXd::Zero(n, p-T0);
+  Eigen::VectorXd beta_A = Eigen::VectorXd::Zero(T0);
+  Eigen::VectorXd d_I = Eigen::VectorXd::Zero(p-T0);
+  Eigen::VectorXd beta=beta0;
+  Eigen::VectorXd d=(X.transpose()*(y-X*beta)) /double(n);
+  Eigen::VectorXd bd=beta+d;
+  bd=bd.cwiseAbs();
+  for(int k=0;k<=T0-1;k++) {
+    max_T=bd.maxCoeff(&A[k]);
+    bd(A[k])=0.0;
+  }
+  sort (A.begin(),A.end());
+  set_difference(E.begin(),E.end(), A.begin(),A.end(),I.begin());
+  for(int l=1;l<=max_steps;l++) {
+    for(int mm=0;mm<=T0-1;mm++) {
+      X_A.col(mm)=X.col(A[mm]);
     }
-    Data data(x, y, data_type, weight, is_normal, g_index);
-
-    Algorithm *algorithm = nullptr;
-
-    /// ### keep
-    // if (algorithm_type == 1 || algorithm_type == 5) {
-    //     if (model_type == 1) {
-    //         data.add_weight();
-    //         algorithm = new L0L2Lm(data, algorithm_type, max_iter);
-    //     } else if (model_type == 2) {
-    //         algorithm = new L0L2Logistic(data, algorithm_type, max_iter);
-    //     } else if (model_type == 3) {
-    //         algorithm = new L0L2Poisson(data, algorithm_type, max_iter);
-    //     } else {
-    //         algorithm = new L0L2Cox(data,algorithm_type, max_iter);
-    //     }
-    // }
-    //    else if (algorithm_type == 2 || algorithm_type == 3) {
-    //     if (model_type == 1) {
-    //         data.add_weight();
-    //         algorithm = new GroupPdasLm(data,algorithm_type, max_iter);
-    //         // algorithm->PhiG = Phi(data.x, g_index, data.get_g_size(), data.get_n(), data.get_p(), data.get_g_num(), 0.);
-    //         // algorithm->invPhiG = invPhi(algorithm->PhiG, data.get_g_num());
-    //     } else if (model_type == 2) {
-    //         algorithm = new GroupPdasLogistic(data, algorithm_type, max_iter);
-    //     } else if (model_type == 3) {
-    //         algorithm = new GroupPdasPoisson(data, algorithm_type, max_iter);
-    //     } else {
-    //         algorithm = new GroupPdasCox(data, algorithm_type, max_iter);
-    //     }
-    // }
-
-    if (algorithm_type == 1 || algorithm_type == 5 || algorithm_type == 2 || algorithm_type == 3)
-    {
-        if (model_type == 1)
-        {
-            data.add_weight();
-            algorithm = new GroupPdasLm(data, algorithm_type, max_iter);
-        }
-        else if (model_type == 2)
-        {
-            algorithm = new GroupPdasLogistic(data, algorithm_type, max_iter);
-        }
-        else if (model_type == 3)
-        {
-            algorithm = new GroupPdasPoisson(data, algorithm_type, max_iter);
-        }
-        else
-        {
-            algorithm = new GroupPdasCox(data, algorithm_type, max_iter);
-        }
+    for(int mm=0;mm<=p-T0-1;mm++) {
+      X_I.col(mm)=X.col(I[mm]);
     }
-
-    algorithm->set_warm_start(is_warm_start);
-    algorithm->always_select = always_select;
-    algorithm->tao = tao;
-
-#ifdef OTHER_ALGORITHM1
-    if (algorithm_type == 6)
-    {
-        if (model_type == 1)
-        {
-            data.add_weight();
-            algorithm = new SpliceLm(data, max_iter);
-        }
-        algorithm->update_exchange_num(exchange_num);
+    beta_A=X_A.colPivHouseholderQr().solve(y);
+    for(int mm=0;mm<=T0-1;mm++) {
+      d(A[mm])=0.0;
+      beta(A[mm])=beta_A(mm);
     }
-#endif
-#ifdef OTHER_ALGORITHM2
-    if (algorithm_type == 7)
-    {
-        if (model_type == 1)
-        {
-            data.add_weight();
-            algorithm = new PrincipalBallLm(data, max_iter);
-        }
+    d_I=(X_I.transpose()*(y-X_A*beta_A))/double(n);
+    for(int mm=0;mm<=p-T0-1;mm++) {
+      beta(I[mm])=0.0;
+      d(I[mm])=d_I(mm);
     }
-#endif
-
-    Metric *metric = nullptr;
-    if (model_type == 1)
-    {
-        metric = new LmMetric(ic_type, is_cv, K);
+    bd=beta+d;
+    bd=bd.cwiseAbs();
+    for(int k=0;k<=T0-1;k++) {
+      max_T=bd.maxCoeff(&B[k]);
+      bd(B[k])=0;
     }
-    else if (model_type == 2)
-    {
-        metric = new LogisticMetric(ic_type, is_cv, K);
+    sort (B.begin(),B.end());
+    set_difference(E.begin(),E.end(), B.begin(),B.end(),J.begin());
+    if(A==B) { break;} else {
+      A=B;
+      I=J;
     }
-    else if (model_type == 3)
-    {
-        metric = new PoissonMetric(ic_type, is_cv, K);
-    }
-    else
-    {
-        metric = new CoxMetric(ic_type, is_cv, K);
-    }
-
-    // For CV
-    if (is_cv)
-    {
-        metric->set_cv_train_test_mask(data.get_n());
-        metric->set_cv_initial_model_param(K, data.get_p());
-        if (model_type == 1)
-            metric->cal_cv_group_XTX(data);
-    }
-
-    List result;
-    if (path_type == 1)
-    {
-        result = sequential_path(data, algorithm, metric, sequence, lambda_seq);
-    }
-    else
-    {
-        if (algorithm_type == 5 || algorithm_type == 3)
-        {
-            double log_lambda_min = log(max(lambda_min, 1e-5));
-            double log_lambda_max = log(max(lambda_max, 1e-5));
-
-            result = pgs_path(data, algorithm, metric, s_min, s_max, log_lambda_min, log_lambda_max, powell_path, nlambda);
-        }
-        else
-        {
-            result = gs_path(data, algorithm, metric, s_min, s_max, K_max, epsilon);
-        }
-    }
-    if (is_screening)
-    {
-        Eigen::VectorXd beta_screening_A;
-
-        Eigen::VectorXd beta = Eigen::VectorXd::Zero(p);
-
-#ifndef R_BUILD
-        result.get_value_by_name("beta", beta_screening_A);
-        for (unsigned int i = 0; i < screening_A.size(); i++)
-        {
-            beta(screening_A(i)) = beta_screening_A(i);
-        }
-        result.add("beta", beta);
-        result.add("screening_A", screening_A);
-#else
-        beta_screening_A = result["beta"];
-        for (int i = 0; i < screening_A.size(); i++)
-        {
-            beta(screening_A(i)) = beta_screening_A(i);
-        }
-        result["beta"] = beta;
-        result.push_back(screening_A, "screening_A");
-#endif
-    }
-
-    delete algorithm;
-    delete metric;
-    return result;
+   }
+   double mse=(y-X*beta).array().square().sum();
+   mse=mse/(2*n);
+   //return beta;
+   return List::create(Named("beta")=beta,Named("max_T")=max_T,Named("mse")=mse);
 }
-
-#ifndef R_BUILD
-
-void pywrap_bess(double *x, int x_row, int x_col, double *y, int y_len, int data_type, double *weight, int weight_len,
-                 bool is_normal,
-                 int algorithm_type, int model_type, int max_iter, int exchange_num,
-                 int path_type, bool is_warm_start,
-                 int ic_type, bool is_cv, int K,
-                 int *gindex, int gindex_len,
-                 double *state, int state_len,
-                 int *sequence, int sequence_len,
-                 double *lambda_sequence, int lambda_sequence_len,
-                 int s_min, int s_max, int K_max, double epsilon,
-                 double lambda_min, double lambda_max, int n_lambda,
-                 bool is_screening, int screening_size, int powell_path,
-                 int *always_select, int always_select_len, double tao,
-                 double *beta_out, int beta_out_len, double *coef0_out, int coef0_out_len, double *train_loss_out,
-                 int train_loss_out_len, double *ic_out, int ic_out_len, double *nullloss_out, double *aic_out,
-                 int aic_out_len, double *bic_out, int bic_out_len, double *gic_out, int gic_out_len, int *A_out,
-                 int A_out_len, int *l_out)
-{
-    Eigen::MatrixXd x_Mat;
-    Eigen::VectorXd y_Vec;
-    Eigen::VectorXd weight_Vec;
-    Eigen::VectorXi gindex_Vec;
-    Eigen::VectorXd state_Vec;
-    Eigen::VectorXi sequence_Vec;
-    Eigen::VectorXd lambda_sequence_Vec;
-    Eigen::VectorXi always_select_Vec;
-
-    x_Mat = Pointer2MatrixXd(x, x_row, x_col);
-    y_Vec = Pointer2VectorXd(y, y_len);
-    weight_Vec = Pointer2VectorXd(weight, weight_len);
-    state_Vec = Pointer2VectorXd(state, state_len);
-    gindex_Vec = Pointer2VectorXi(gindex, gindex_len);
-    sequence_Vec = Pointer2VectorXi(sequence, sequence_len);
-    lambda_sequence_Vec = Pointer2VectorXd(lambda_sequence, lambda_sequence_len);
-    always_select_Vec = Pointer2VectorXi(always_select, always_select_len);
-
-    List mylist = bessCpp(x_Mat, y_Vec, data_type, weight_Vec,
-                          is_normal,
-                          algorithm_type, model_type, max_iter, exchange_num,
-                          path_type, is_warm_start,
-                          ic_type, is_cv, K,
-                          state_Vec,
-                          sequence_Vec,
-                          lambda_sequence_Vec,
-                          s_min, s_max, K_max, epsilon,
-                          lambda_min, lambda_max, n_lambda,
-                          is_screening, screening_size, powell_path,
-                          gindex_Vec,
-                          always_select_Vec, tao);
-
-    Eigen::VectorXd beta;
-    double coef0;
-    double train_loss;
-    double ic;
-    mylist.get_value_by_name("beta", beta);
-    mylist.get_value_by_name("coef0", coef0);
-    mylist.get_value_by_name("train_loss", train_loss);
-    mylist.get_value_by_name("ic", ic);
-
-    VectorXd2Pointer(beta, beta_out);
-    *coef0_out = coef0;
-    *train_loss_out = train_loss;
-    *ic_out = ic;
+// [[Rcpp::export]]
+List get_A(Eigen::MatrixXd& X, Eigen::VectorXd& y, Eigen::VectorXd& beta, double& coef0,int& T0, Eigen::VectorXi& B, Eigen::VectorXd& weights) {
+  double max_T=0.0;
+  int n=X.rows();
+  int p=X.cols();
+  Eigen::VectorXd one_xbeta_exp = Eigen::VectorXd::Zero(n);
+  Eigen::VectorXd bd = Eigen::VectorXd::Zero(p);
+  Eigen::VectorXi A_out = Eigen::VectorXi::Zero(T0);
+  Eigen::VectorXi I_out = Eigen::VectorXi::Zero(p-T0);
+  Eigen::VectorXd one = Eigen::VectorXd::Ones(n);
+  vector<int>E(p);
+  for(int k=0;k<=p-1;k++) {
+    E[k]=k;
+  }
+  vector<int>A(T0);
+  vector<int>I(p-T0);
+  Eigen::VectorXd coef(n);
+  for(int i=0;i<=n-1;i++) {
+    coef(i)=coef0;
+  }
+  Eigen::VectorXd xbeta_exp = X*beta+coef;
+  for(int i=0;i<=n-1;i++) {
+    if(xbeta_exp(i)>25.0) xbeta_exp(i) = 25.0;
+    if(xbeta_exp(i)<-25.0) xbeta_exp(i) = -25.0;
+  }
+  xbeta_exp = xbeta_exp.array().exp();
+  Eigen::VectorXd pr = xbeta_exp.array()/(xbeta_exp+one).array();
+  Eigen::VectorXd l1=-X.adjoint()*((y-pr).cwiseProduct(weights));
+  //Eigen::MatrixXd X2=X.adjoint().array().square();
+  X=X.array().square();
+  Eigen::VectorXd l2=(X.adjoint())*((pr.cwiseProduct(one-pr)).cwiseProduct(weights));
+  Eigen::VectorXd d=-l1.cwiseQuotient(l2);
+  if(B.size()<p) {
+    for(int k=0;k<=B.size()-1;k++) {
+      d(B(k)-1)=0.0;
+    }
+  }
+  bd = (beta+d).cwiseAbs().cwiseProduct(l2.cwiseSqrt());
+  //bd=bd.cwiseAbs();
+  //bd=bd.cwiseProduct(l2.cwiseSqrt());
+  for(int k=0;k<=T0-1;k++) {
+    max_T=bd.maxCoeff(&A[k]);
+    bd(A[k])=0.0;
+  }
+  sort (A.begin(),A.end());
+  set_difference(E.begin(),E.end(), A.begin(),A.end(),I.begin());
+  for(int i=0;i<T0;i++)
+	  A_out(i) = A[i]+1;
+  for(int i=0;i<p-T0;i++)
+	  I_out(i) = I[i]+1;
+  return List::create(Named("p")=pr,Named("A")=A_out,Named("I")=I_out,Named("max_T")=max_T);
 }
-#endif
+// [[Rcpp::export]]
+List getcox_A(Eigen::MatrixXd& X, Eigen::VectorXd& beta, int& T0, Eigen::VectorXi& B, Eigen::VectorXd& status, Eigen::VectorXd& weights) {
+  double max_T=0.0;
+  int n=X.rows();
+  int p=X.cols();
+  Eigen::VectorXi A_out = Eigen::VectorXi::Zero(T0);
+  Eigen::VectorXi I_out = Eigen::VectorXi::Zero(p-T0);
+  Eigen::VectorXd l1 = Eigen::VectorXd::Zero(p);
+  Eigen::VectorXd l2 = Eigen::VectorXd::Zero(p);
+  Eigen::VectorXd cum_theta=Eigen::VectorXd::Zero(n);
+  Eigen::VectorXd d = Eigen::VectorXd::Zero(p);
+  Eigen::VectorXd bd = Eigen::VectorXd::Zero(p);
+  Eigen::MatrixXd xtheta(n,p);
+  Eigen::MatrixXd x2theta(n,p);
+  vector<int>E(p);
+  for(int k=0;k<=p-1;k++) {
+    E[k]=k;
+  }
+  vector<int>A(T0);
+  vector<int>I(p-T0);
+  Eigen::VectorXd theta=X*beta;
+    for(int i=0;i<=n-1;i++) {
+    if(theta(i)>25.0) theta(i) = 25.0;
+    if(theta(i)<-25.0) theta(i) = -25.0;
+  }
+  theta=weights.array()*theta.array().exp();
+  cum_theta(n-1)=theta(n-1);
+  for(int k=n-2;k>=0;k--) {
+    cum_theta(k)=cum_theta(k+1)+theta(k);
+  }
+  for(int k=0;k<=p-1;k++) {
+    xtheta.col(k)=theta.cwiseProduct(X.col(k));
+  }
+  for(int k=0;k<=p-1;k++) {
+    x2theta.col(k)=X.col(k).cwiseProduct(xtheta.col(k));
+  }
+  for(int k=n-2;k>=0;k--) {
+    xtheta.row(k)=xtheta.row(k+1)+xtheta.row(k);
+  }
+  for(int k=n-2;k>=0;k--) {
+    x2theta.row(k)=x2theta.row(k+1)+x2theta.row(k);
+  }
+  for(int k=0;k<=p-1;k++) {
+    xtheta.col(k)=xtheta.col(k).cwiseQuotient(cum_theta);
+  }
+  for(int k=0;k<=p-1;k++) {
+    x2theta.col(k)=x2theta.col(k).cwiseQuotient(cum_theta);
+  }
+  x2theta=x2theta.array()-xtheta.array().square().array();
+  xtheta=X.array()-xtheta.array();
+  if(status.size()>0) {
+    for(int k=0;k<=status.size()-1;k++) {
+      xtheta.row(status(k)-1)=Eigen::VectorXd::Zero(p);
+      x2theta.row(status(k)-1)=Eigen::VectorXd::Zero(p);
+    }
+  }
+  l1=-xtheta.adjoint()*weights;
+  l2=x2theta.adjoint()*weights;
+  d=-l1.cwiseQuotient(l2);
+  if(B.size()<p) {
+    for(int k=0;k<=B.size()-1;k++) {
+      d(B(k)-1)=0.0;
+    }
+  }
+  bd=beta+d;
+  bd=bd.cwiseAbs();
+  bd=bd.cwiseProduct(l2.cwiseSqrt());
+  for(int k=0;k<=T0-1;k++) {
+    max_T=bd.maxCoeff(&A[k]);
+    bd(A[k])=0.0;
+  }
+  sort (A.begin(),A.end());
+  set_difference(E.begin(),E.end(), A.begin(),A.end(),I.begin());
+  for(int i=0;i<T0;i++)
+	  A_out(i) = A[i]+1;
+  for(int i=0;i<p-T0;i++)
+	  I_out(i) = I[i]+1;
+  return List::create(Named("A")=A_out,Named("I")=I_out,Named("max_T")=max_T);
+}
