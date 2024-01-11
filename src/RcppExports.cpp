@@ -9,6 +9,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // bess_lm
 List bess_lm(Eigen::MatrixXd X, Eigen::VectorXd y, int T0, int max_steps, Eigen::VectorXd beta0);
 static SEXP _BeSS_bess_lm_try(SEXP XSEXP, SEXP ySEXP, SEXP T0SEXP, SEXP max_stepsSEXP, SEXP beta0SEXP) {
@@ -42,7 +47,7 @@ RcppExport SEXP _BeSS_bess_lm(SEXP XSEXP, SEXP ySEXP, SEXP T0SEXP, SEXP max_step
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -82,7 +87,7 @@ RcppExport SEXP _BeSS_get_A(SEXP XSEXP, SEXP ySEXP, SEXP betaSEXP, SEXP coef0SEX
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -121,7 +126,7 @@ RcppExport SEXP _BeSS_getcox_A(SEXP XSEXP, SEXP betaSEXP, SEXP T0SEXP, SEXP BSEX
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -155,7 +160,7 @@ RcppExport SEXP _BeSS_EigenR(SEXP XSEXP) {
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -200,7 +205,7 @@ RcppExport SEXP _BeSS_gbess_lm(SEXP XSEXP, SEXP ySEXP, SEXP GSEXP, SEXP indexSEX
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -245,7 +250,7 @@ RcppExport SEXP _BeSS_gget_A(SEXP XSEXP, SEXP ySEXP, SEXP GSEXP, SEXP indexSEXP,
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;
@@ -289,7 +294,7 @@ RcppExport SEXP _BeSS_ggetcox_A(SEXP XSEXP, SEXP GSEXP, SEXP indexSEXP, SEXP T0S
     if (rcpp_isError_gen) {
         SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
         UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
+        Rf_error("%s", CHAR(rcpp_msgSEXP_gen));
     }
     UNPROTECT(1);
     return rcpp_result_gen;

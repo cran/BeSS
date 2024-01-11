@@ -31,5 +31,5 @@ ggetcox_A <- function(X, G, index, T0, beta0, n, p, N, status, weights, B00) {
 
 # Register entry points for exported C++ functions
 methods::setLoadAction(function(ns) {
-    .Call('_BeSS_RcppExport_registerCCallable', PACKAGE = 'BeSS')
+    .Call(`_BeSS_RcppExport_registerCCallable`)
 })

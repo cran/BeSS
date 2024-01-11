@@ -1,6 +1,6 @@
-97a5376f19ad53db30fa50babcfec335 *DESCRIPTION
+f66bff6739f64ca3bde89783d0bdc9ac *DESCRIPTION
 ec57199b540fddd21d3d85d2fa12b283 *NAMESPACE
-dcca383469713530c1533dc3bf583c85 *R/RcppExports.R
+57084eff73c7157b811957ef27180cfe *R/RcppExports.R
 72650c823f8e23719b083691dbc425ee *R/aic.R
 cda38878fa8fa40abce59a8db4f4a4e3 *R/bess.R
 71f05fc6cf63cc2cdd1d37d99876d3fa *R/bess.cox.R
@@ -48,6 +48,6 @@ d07ea8295559fa37b3a867a238d4bdfe *man/print.bess.one.Rd
 95937564b1dcb4c9989d67eccdd178f8 *man/prostate.Rd
 061baaa933ae19681c83524884841769 *man/summary.bess.Rd
 62fe869481a4b4580937918a021bf895 *man/summary.bess.one.Rd
-b0d920674228a357e676e10f1fea7fce *src/RcppExports.cpp
+a2f434026672b3a90b2ece2f5db61d10 *src/RcppExports.cpp
 aee5f82bcbe69bcaf11440c7df6e6336 *src/bess.cpp
 954aff2d34f21c2cdbbbfad4debd730c *src/group.cpp
